@@ -1,0 +1,88 @@
+def _versions = [
+
+//        architectureComponentsVersion: '1.1.1',
+        constraintLayoutVersion      : '1.1.0',
+//        dagger2Version               : '2.15',
+//        dataBindingCompilerVersion   : '3.1.3',
+//        databindingVersion           : '1.3.1',
+//        mvpLiveDataVersion           : '1.1.0',
+//
+//        analytics                    : '0.6.0',
+//        http                         : '0.2.0',
+//        log                          : '1.0.0',
+//        assertj                      : '2.6.0',
+//
+//        okhttpinterceptor            : '3.8.1',
+//
+//        bootstrap                    : '1.1.0',
+//
+//        // Test library versions
+//        dexmakerVersion              : '2.12.1',
+//        espressoVersion              : '3.0.1',
+//        httpTest                     : '0.3.0',
+//        mockitoInline                : '2.8.9',
+//
+        kotlinVersion                : '1.2.50',
+//        bootstrapPlugin              : '1.3.0',
+
+        support                      : '28.0.0',
+        androidCompileSdk            : 28,
+        androidBuildTools            : '26.0.2',
+
+        androidMinSdk                : 21,
+        targetSdkVersion             : 28,
+
+        applicationId                : 'com.android.es.roversanz.series',
+
+]
+def _libraries = [
+        android     : [
+                appcompat          : "com.android.support:appcompat-v7:${_versions.support}",
+                support            : "com.android.support:support-v4:${_versions.support}",
+                design             : "com.android.support:design:${_versions.support}",
+                constraintLayout   : "com.android.support.constraint:constraint-layout:${_versions.constraintLayoutVersion}",
+//                dataBindingCompiler: "com.android.databinding:compiler:${_versions.dataBindingCompilerVersion}",
+//                databinding        : "com.android.databinding:library:${_versions.databindingVersion}",
+//                runner             : "com.android.support.test:runner:0.5",
+//                rules              : "com.android.support.test:rules:0.5",
+                kotlin             : "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${_versions.kotlinVersion}",
+        ],
+//        apt         : [
+//                dagger        : "com.google.dagger:dagger:${_versions.dagger2Version}",
+//                daggerCompiler: "com.google.dagger:dagger-compiler:${_versions.dagger2Version}"
+//        ],
+//        architecture: [
+//                coreRuntime : "android.arch.core:runtime:${_versions.architectureComponentsVersion}",
+//                extensions  : "android.arch.lifecycle:extensions:${_versions.architectureComponentsVersion}",
+//                livedataCore: "android.arch.lifecycle:livedata-core:${_versions.architectureComponentsVersion}",
+//                runtime     : "android.arch.lifecycle:runtime:${_versions.architectureComponentsVersion}",
+//                viewmodel   : "android.arch.lifecycle:viewmodel:${_versions.architectureComponentsVersion}",
+//        ],
+//        net         : [
+//                okhttpinterceptor: "com.squareup.okhttp3:logging-interceptor:${_versions.okhttpinterceptor}"
+//
+//        ],
+//        test        : [
+//                architectureCoreTesting: "android.arch.core:core-testing:${_versions.architectureComponentsVersion}",
+//                assertjCore            : "org.assertj:assertj-core:${_versions.assertj}",
+//                dexmaker               : "com.linkedin.dexmaker:dexmaker:${_versions.dexmakerVersion}",
+//                dexmakerMockito        : "com.linkedin.dexmaker:dexmaker-mockito:${_versions.dexmakerVersion}",
+//                espressoCore           : "com.android.support.test.espresso:espresso-core:${_versions.espressoVersion}",
+//                espressoContrib        : "com.android.support.test.espresso:espresso-contrib:${_versions.espressoVersion}",
+//                mockitoInline          : "org.mockito:mockito-inline:${_versions.mockitoInline}",
+//                junit                  : "junit:junit:4.12",
+//                mockitoCore            : "org.mockito:mockito-core:2.7.22",
+//                mockitoKotlin          : "com.nhaarman:mockito-kotlin:1.5.0",
+//                hamcrestAll            : "org.hamcrest:hamcrest-all:1.3",
+//                hamcrestCore           : "org.hamcrest:hamcrest-core:1.3",
+//                hamcrestIntegration    : "org.hamcrest:hamcrest-integration:1.3",
+//                hamcrestLibrary        : "org.hamcrest:hamcrest-library:1.3"
+//
+//        ],
+]
+
+ext {
+    targetSdkVersion = 25
+    localLibraries = _libraries
+    localVersions = _versions
+}

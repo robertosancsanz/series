@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Disable the given check in this project -->
+    <issue id="IconMissingDensityFolder" severity="ignore"/>
+
+    <issue id="VectorRaster" severity="ignore"/>
+
+    <issue id="UnusedResources" severity="ignore"/>
+
+    <issue id="UncheckedCast" severity="ignore"/>
+
+    <!-- Change the severity of hardcoded strings to "error" -->
+    <issue id="HardcodedText" severity="error"/>
+</lint>

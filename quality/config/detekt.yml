@@ -1,0 +1,231 @@
+autoCorrect: true
+failFast: true
+
+build:
+  maxIssues: 0
+  weights:
+    comments: 0.5
+    complexity: 2
+    empty-blocks: 1
+    exceptions: 1
+    formatting: 1
+    potential-bugs: 1
+    style: 1
+
+code-smell:
+  active: true
+  FeatureEnvy:
+    threshold: 0.5
+    weight: 0.45
+    base: 0.5
+
+console-reports:
+  active: true
+  exclude:
+  #  - 'ProjectStatisticsReport'
+  #  - 'ComplexityReport'
+  #  - 'NotificationReport'
+  #  - 'FindingsReport'
+  #  - 'BuildFailureReport'
+
+output-reports:
+  active: true
+  exclude:
+  #  - 'HtmlOutputReport'
+  #  - 'PlainOutputReport'
+  #  - 'XmlOutputReport'
+
+comments:
+  active: false
+  CommentOverPrivateMethod:
+    active: true
+  CommentOverPrivateProperty:
+    active: true
+  NoDocOverPublicClass:
+    active: false
+  NoDocOverPublicMethod:
+    active: false
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+
+complexity:
+  active: true
+  LabeledExpression:
+    active: true
+  LongMethod:
+    active: true
+    threshold: 20
+  LongParameterList:
+    active: true
+    threshold: 8
+  LargeClass:
+    active: true
+    threshold: 150
+  ComplexMethod:
+    active: true
+    threshold: 10
+  TooManyFunctions:
+    active: false
+    threshold: 10
+  ComplexCondition:
+    active: true
+    threshold: 3
+
+empty-blocks:
+  active: true
+  EmptyCatchBlock:
+    active: true
+  EmptyIfBlock:
+    active: true
+  EmptyElseBlock:
+    active: true
+  EmptyFinallyBlock:
+    active: true
+  EmptyFunctionBlock:
+    active: true
+  EmptyWhenBlock:
+    active: true
+  EmptyWhileBlock:
+    active: true
+
+exceptions:
+  active: true
+
+formatting:
+  active: true
+  android: true
+  autoCorrect: true
+  useTabs: true
+  Indentation:
+    active: true
+    indentSize: 4
+  ConsecutiveBlankLines:
+    active: true
+    autoCorrect: true
+  NoBlankLineBeforeRbrace:
+    active: true
+    autoCorrect: true
+  MultipleSpaces:
+    active: true
+    autoCorrect: true
+  SpacingAfterComma:
+    active: true
+    autoCorrect: true
+  SpacingAfterKeyword:
+    active: true
+    autoCorrect: true
+  SpacingAroundColon:
+    active: true
+    autoCorrect: true
+  SpacingAroundCurlyBraces:
+    active: true
+    autoCorrect: true
+  SpacingAroundOperator:
+    active: true
+    autoCorrect: true
+  TrailingSpaces:
+    active: true
+    autoCorrect: true
+  UnusedImports:
+    active: true
+    autoCorrect: true
+  OptionalSemicolon:
+    active: true
+    autoCorrect: true
+  OptionalUnit:
+    active: true
+    autoCorrect: true
+  ExpressionBodySyntax:
+    active: true
+    autoCorrect: true
+  ExpressionBodySyntaxLineBreaks:
+    active: true
+    autoCorrect: true
+  NoConsecutiveBlankLines:
+    active: true
+    autoCorrect: true
+
+potential-bugs:
+  active: true
+  DuplicateCaseInWhenExpression:
+    active: true
+  EqualsAlwaysReturnsTrueOrFalse:
+    active: true
+  EqualsWithHashCodeExist:
+    active: true
+  ExplicitGarbageCollectionCall:
+    active: true
+  LateinitUsage:
+#    active: true
+    active: false
+  UnsafeCast:
+    active: true
+
+style:
+  active: true
+  CollapsibleIfStatements:
+    active: true
+  FunctionMinLength:
+    active: false
+  FunctionMaxLength:
+    active: false
+  UnusedPrivateMember:
+    active: true
+  VariableNaming:
+    active: false
+  ClassNaming:
+    active: false
+  WildcardImport:
+    active: true
+  EqualsNullCall:
+    active: true
+  ExpressionBodySyntax:
+    active: true
+  MagicNumber:
+    active: true
+    ignoreNumbers: '-1,0,1,2'
+  MandatoryBracesIfStatements:
+    active: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 150
+  NewLineAtEndOfFile:
+    active: true
+  SpacingBetweenPackageAndImports:
+    active: true
+  TrailingWhitespace:
+    active: true
+  FunctionOnlyReturningConstant:
+    active: true
+  WildcardImport:
+    active: true
+  UnnecessaryParentheses:
+    active: true
+  UnnecessaryAbstractClass:
+    active: false
+  UnusedImports:
+    active: true
+  SpacingAroundColon:
+    active: true
+  SpacingAroundComma:
+    active: true
+  SpacingAroundCurly:
+    active: true
+  SpacingAroundKeyword:
+    active: true
+  SpacingAroundOperators:
+    active: true
+  ForbiddenComment:
+    active: false
+#  NamingConventionViolation:
+#    active: true
+#    variablePattern: '^(_)?[a-z$][a-zA-Z$0-9]*$'
+#    constantPattern: '^([A-Z_]*|serialVersionUID)$'
+#    methodPattern: '^[a-z$][a-zA-Z$0-9]*$'
+#    classPattern: '[A-Z$][a-zA-Z$]*'
+#    enumEntryPattern: '^[A-Z$][a-zA-Z_$]*$'
+
+naming:
+  active: true

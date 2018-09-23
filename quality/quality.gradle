@@ -1,0 +1,97 @@
+apply plugin: 'checkstyle'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
+
+configurations {
+    detekt
+    quality
+}
+
+dependencies {
+    checkstyle 'com.puppycrawl.tools:checkstyle:8.7'
+    detekt "io.gitlab.arturbosch.detekt:detekt-cli:1.0.0.RC5-6"
+}
+
+def qualityConfigDir = "$project.rootDir/quality/config"
+def reportsDir = "$project.buildDir/reports"
+
+task checkstyle(type: Checkstyle, group: 'Verification', description: 'Runs code style checks') {
+    configFile file("$qualityConfigDir/checkstyle/checkstyle-config.xml")
+    source 'src'
+    include '**/*.java'
+
+    reports {
+        xml.enabled = true
+        xml {
+            destination new File("$reportsDir/checkstyle/checkstyle.xml")
+        }
+    }
+
+    classpath = files()
+}
+
+task findbugs(type: FindBugs,
+        group: 'Verification',
+        description: 'Inspect java bytecode for bugs',
+        dependsOn: ['app:compileDebugSources', 'app:compileReleaseSources']) {
+
+    ignoreFailures = false
+    effort = "max"
+    reportLevel = "high"
+    excludeFilter = new File("$qualityConfigDir/findbugs-filter.xml")
+    classes = files("$project.rootDir/app/build/intermediates/classes")
+
+    source 'src'
+    include '**/*.java'
+    exclude '**/gen/**'
+
+    reports {
+        xml.enabled = true
+        html.enabled = false
+        xml {
+            destination new File("$reportsDir/findbugs/findbugs.xml")
+        }
+        html {
+            destination new File("$reportsDir/findbugs/findbugs.html")
+        }
+    }
+
+    classpath = files()
+}
+
+task pmd(type: Pmd, group: 'Verification', description: 'Inspect sourcecode for bugs') {
+    ruleSetFiles = files("$qualityConfigDir/pmd-ruleset.xml")
+    ignoreFailures = false
+    ruleSets = []
+
+    source 'src'
+    include '**/*.java'
+    exclude '**/gen/**'
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+        xml {
+            destination new File("$reportsDir/pmd/pmd.xml")
+        }
+        html {
+            destination new File("$reportsDir/pmd/pmd.html")
+        }
+    }
+}
+
+task detekt(type: JavaExec, group: 'verification', description: 'Run Detekt tasks') {
+
+    main = "io.gitlab.arturbosch.detekt.cli.Main"
+    classpath = configurations.detekt
+    def input = "$projectDir"
+    def config = "$qualityConfigDir/detekt.yml"
+    def filters = ".*/build/.*,.*/resources/.*"
+    def output = "${reportsDir}/detekt"
+    def params = ['-i', input, '-c', config, '-f', filters, '-o', output]
+    args(params)
+}
+
+task quality(type: Checkstyle, group: 'verification', description: 'Run Quality tasks')
+
+quality.dependsOn 'checkstyle', /*'findbugs',*/ 'pmd', 'app:lint', 'detekt'

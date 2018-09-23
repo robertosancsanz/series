@@ -1,0 +1,51 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion localVersions.androidCompileSdk
+    defaultConfig {
+        applicationId localVersions.applicationId
+        minSdkVersion localVersions.androidMinSdk
+        targetSdkVersion localVersions.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+
+        }
+        release {
+            debuggable false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    dexOptions {
+        javaMaxHeapSize "2048M"
+    }
+
+    lintOptions {
+        lintConfig file("$project.rootDir/quality/config/lint.xml")
+        htmlOutput file("$project.buildDir/reports/lint/lint.html")
+        warningsAsErrors true
+        xmlReport false
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation localLibraries.android.kotlin
+    implementation localLibraries.android.appcompat
+    implementation localLibraries.android.support
+    implementation localLibraries.android.design
+    implementation localLibraries.android.constraintLayout
+
+}
