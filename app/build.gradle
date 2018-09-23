@@ -3,6 +3,9 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+kapt {
+    generateStubs = true
+}
 android {
     compileSdkVersion localVersions.androidCompileSdk
     defaultConfig {
@@ -32,20 +35,81 @@ android {
         javaMaxHeapSize "2048M"
     }
 
+    dataBinding {
+        enabled = true
+    }
+
     lintOptions {
         lintConfig file("$project.rootDir/quality/config/lint.xml")
         htmlOutput file("$project.buildDir/reports/lint/lint.html")
         warningsAsErrors true
+        abortOnError false
         xmlReport false
     }
 }
 
 dependencies {
+
+    // region Common
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation localLibraries.android.kotlin
     implementation localLibraries.android.appcompat
     implementation localLibraries.android.support
     implementation localLibraries.android.design
     implementation localLibraries.android.constraintLayout
+    //endregion
+
+    implementation localLibraries.android.kotlin
+
+    //region Rx
+
+    implementation localLibraries.lang.rxKotlin
+    implementation localLibraries.lang.rxJava
+    implementation localLibraries.lang.rxAndroid
+
+    //endregion
+
+    //region Retrofit
+
+    implementation localLibraries.net.retrofit
+    implementation localLibraries.net.okhttpinterceptor
+
+    //endregion
+
+    //region Dagger 2
+
+    implementation localLibraries.apt.dagger
+    implementation localLibraries.apt.daggerAndroid
+    kapt localLibraries.apt.daggerProcessor
+    kapt localLibraries.apt.daggerCompiler
+
+    //endregion
+
+    //region Architecture
+
+    implementation localLibraries.architecture.extensions
+    implementation localLibraries.architecture.viewmodel
+    implementation localLibraries.architecture.livedataCore
+    implementation localLibraries.architecture.runtime
+
+    //endregion
+
+    //region Database
+
+    implementation localLibraries.bbdd.room
+    kapt localLibraries.bbdd.roomCompiler
+    implementation localLibraries.bbdd.roomRx
+    debugImplementation localLibraries.utils.stetho
+
+    //endregion
+
+    // region Databinding
+
+    implementation localLibraries.android.databinding
+    annotationProcessor localLibraries.android.dataBindingCompiler
+    implementation localLibraries.android.dataBindingAdapter
+
+    //endregion
+
+    debugImplementation localLibraries.utils.leakcanary
 
 }
