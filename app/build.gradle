@@ -98,7 +98,7 @@ dependencies {
     implementation localLibraries.bbdd.room
     kapt localLibraries.bbdd.roomCompiler
     implementation localLibraries.bbdd.roomRx
-    debugImplementation localLibraries.utils.stetho
+    implementation localLibraries.utils.stetho
 
     //endregion
 
@@ -110,6 +110,6 @@ dependencies {
 
     //endregion
 
-    debugImplementation localLibraries.utils.leakcanary
+    implementation localLibraries.utils.leakcanary
 
 }
