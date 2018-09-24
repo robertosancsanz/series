@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SeriesMVVM</string>
+    <string name="error_general">An error has occurred. Try again later.</string>
 </resources>
