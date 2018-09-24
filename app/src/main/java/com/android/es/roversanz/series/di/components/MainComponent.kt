@@ -1,6 +1,7 @@
 package com.android.es.roversanz.series.di.components
 
 import android.content.Context
+import com.android.es.roversanz.series.di.MySchedulers
 import com.android.es.roversanz.series.di.module.ApplicationModule
 import com.android.es.roversanz.series.di.module.LoggerModule
 import com.android.es.roversanz.series.utils.ResourceProvider
@@ -17,5 +18,7 @@ interface MainComponent {
     fun provideResourceProvider(): ResourceProvider
 
     fun provideLogger(): Logger
+
+    fun provideSchedulers(): MySchedulers
 
 }
