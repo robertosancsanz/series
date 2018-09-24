@@ -1,6 +1,5 @@
 #Android Studio related files
 .gradle/
-.gradle/
 .gradletasknamecache
 local.gradle
 local-*.gradle
