@@ -6,6 +6,7 @@ import com.android.es.roversanz.series.di.module.LoggerModule
 import com.android.es.roversanz.series.presentation.di.module.ApplicationModule
 import com.android.es.roversanz.series.presentation.di.module.RepositoryModule
 import com.android.es.roversanz.series.presentation.di.module.UseCasesModule
+import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import dagger.Component
@@ -23,5 +24,7 @@ interface MainComponent {
     fun provideLogger(): Logger
 
     fun provideSerieRepository(): SerieRepository
+
+    fun provideGetSeriesListUseCase(): GetSeriesListUseCase
 
 }
