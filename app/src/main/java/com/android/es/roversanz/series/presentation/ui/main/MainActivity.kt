@@ -14,7 +14,6 @@ import com.android.es.roversanz.series.presentation.ui.list.ListFragment
 import com.android.es.roversanz.series.utils.app
 import dagger.Component
 
-
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -22,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val viewModel: MainViewModel by lazy {
-        ViewModelProviders.of(this, FactoryMainViewModel())[MainViewModel::class.java]
+        ViewModelProviders.of(this)[MainViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,10 +32,17 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.getState().observe(this, Observer { state ->
             when (state) {
+                MainState.INITIAL -> Log.d(TAG, "Initial State")
                 MainState.LIST -> loadFragment(ListFragment.getInstance(), ListFragment::class.java.simpleName, false)
+                is MainState.DETAIL -> Log.d(TAG, "Load Detail")
                 else -> Log.d(TAG, "Something is wrong")
             }
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.getState().removeObservers(this)
     }
 
     private fun loadFragment(fragment: Fragment, tag: String, addToBackStack: Boolean) {
