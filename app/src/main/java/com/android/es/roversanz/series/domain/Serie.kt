@@ -1,4 +1,4 @@
-package com.android.es.roversanz.series.data.model
+package com.android.es.roversanz.series.domain
 
 data class Serie(
         val id: Long,

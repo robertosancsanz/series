@@ -13,7 +13,7 @@ def _versions = [
         retrofitVersion              : '2.4.0',
         okhttpinterceptor            : '3.8.1',
         stetho                       : '1.5.0',
-        leakcanary:'1.6.1',
+        leakcanary                   : '1.6.1',
 //        mvpLiveDataVersion           : '1.1.0',
 //
 //        analytics                    : '0.6.0',
@@ -51,8 +51,8 @@ def _libraries = [
                 // alternatively - just ViewModel
                 viewmodel   : "android.arch.lifecycle:viewmodel:${_versions.architectureComponentsVersion}",
                 // alternatively - just LiveData
-                // livedata "android.arch.lifecycle:livedata:$lifecycle_version"
-                livedataCore: "android.arch.lifecycle:livedata-core:${_versions.architectureComponentsVersion}",
+                livedata    : "android.arch.lifecycle:livedata:${_versions.architectureComponentsVersion}",
+//                livedataCore: "android.arch.lifecycle:livedata-core:${_versions.architectureComponentsVersion}",
                 // alternatively - Lifecycles only (no ViewModel or LiveData).
                 // Support library depends on this lightweight import
                 runtime     : "android.arch.lifecycle:runtime:${_versions.architectureComponentsVersion}",
@@ -77,8 +77,8 @@ def _libraries = [
                 rxKotlin : "io.reactivex.rxjava2:rxkotlin:${_versions.rxJava}",
         ],
         utils       : [
-                stetho: "com.facebook.stetho:stetho:${_versions.stetho}",
-                leakcanary:"com.squareup.leakcanary:leakcanary-android:${_versions.leakcanary}",
+                stetho    : "com.facebook.stetho:stetho:${_versions.stetho}",
+                leakcanary: "com.squareup.leakcanary:leakcanary-android:${_versions.leakcanary}",
         ],
 ]
 
