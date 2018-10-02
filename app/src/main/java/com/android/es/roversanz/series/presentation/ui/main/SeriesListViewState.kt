@@ -1,7 +1,7 @@
 package com.android.es.roversanz.series.presentation.ui.main
 
-class SeriesListViewState {
-
+//class SeriesListViewState {
+//
 //    val navigatorTrigger: ConsumableLiveData<Serie> = ConsumableLiveData()
 //    val listState = observableFieldOf<SeriesListState>(SeriesListState.INITIAL)
 //
@@ -24,5 +24,5 @@ class SeriesListViewState {
 //    fun navigateTo(serie: Serie) {
 //        navigatorTrigger.postValue(serie)
 //    }
-
-}
+//
+//}

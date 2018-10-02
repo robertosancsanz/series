@@ -1,4 +1,4 @@
-package com.android.es.roversanz.series.data.provider
+package com.android.es.roversanz.series.usecases.provider
 
 import io.reactivex.Scheduler
 

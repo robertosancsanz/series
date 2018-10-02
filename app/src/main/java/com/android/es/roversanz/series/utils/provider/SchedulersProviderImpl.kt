@@ -1,6 +1,6 @@
 package com.android.es.roversanz.series.utils.provider
 
-import com.android.es.roversanz.series.data.provider.SchedulersProvider
+import com.android.es.roversanz.series.usecases.provider.SchedulersProvider
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers.io
 
