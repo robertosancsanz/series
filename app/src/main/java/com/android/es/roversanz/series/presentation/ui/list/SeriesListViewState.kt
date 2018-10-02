@@ -1,24 +1,24 @@
-package com.android.es.roversanz.series.presentation.ui.main
+package com.android.es.roversanz.series.presentation.ui.list
 
 //class SeriesListViewState {
 //
 //    val navigatorTrigger: ConsumableLiveData<Serie> = ConsumableLiveData()
-//    val listState = observableFieldOf<SeriesListState>(SeriesListState.INITIAL)
+//    val listState = observableFieldOf<MainState>(MainState.INITIAL)
 //
 //    fun displayLoading() {
-//        listState.value = SeriesListState.BUSY
+//        listState.value = MainState.BUSY
 //    }
 //
 //    fun displayList(series: List<Serie>) {
-//        listState.value = SeriesListState.DONE(series)
+//        listState.value = MainState.DONE(series)
 //    }
 //
 //    fun displayEmptyListMessage() {
-//        listState.value = SeriesListState.EMPTY
+//        listState.value = MainState.EMPTY
 //    }
 //
 //    fun displayError(error: Throwable) {
-//        listState.value = SeriesListState.ERROR("Error")
+//        listState.value = MainState.ERROR("Error")
 //    }
 //
 //    fun navigateTo(serie: Serie) {

@@ -1,4 +1,4 @@
-package com.android.es.roversanz.series.presentation.ui.main
+package com.android.es.roversanz.series.presentation.ui.list
 
 import com.android.es.roversanz.series.domain.Serie
 

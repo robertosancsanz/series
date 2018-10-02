@@ -1,15 +1,29 @@
 package com.android.es.roversanz.series.presentation.ui.main
 
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import com.android.es.roversanz.series.R
 import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.ActivityScope
+import com.android.es.roversanz.series.presentation.ui.list.ListFragment
 import com.android.es.roversanz.series.utils.app
 import dagger.Component
 
+
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private val TAG = MainActivity::class.java.simpleName
+    }
+
+    private val viewModel: MainViewModel by lazy {
+        ViewModelProviders.of(this, FactoryMainViewModel())[MainViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,6 +31,24 @@ class MainActivity : AppCompatActivity() {
 
         inject(app())
 
+        viewModel.getState().observe(this, Observer { state ->
+            when (state) {
+                MainState.LIST -> loadFragment(ListFragment.getInstance(), ListFragment::class.java.simpleName, false)
+                else -> Log.d(TAG, "Something is wrong")
+            }
+        })
+    }
+
+    private fun loadFragment(fragment: Fragment, tag: String, addToBackStack: Boolean) {
+        val fragmentFounded = supportFragmentManager.findFragmentByTag(tag)
+        if (fragmentFounded == null) {
+            supportFragmentManager.beginTransaction().apply {
+                add(R.id.fragmentContainer, fragment, tag)
+                if (addToBackStack) {
+                    addToBackStack(tag)
+                }
+            }.commit()
+        }
     }
 
     private fun inject(app: MyApplication) {

@@ -19,13 +19,13 @@ class UseCasesModule {
 
     @Provides
     @Singleton
-    internal fun provideSeriesListRepository(schedulers: SchedulersProvider,
-                                        repository: SerieRepository,
-                                        resourceProvider: ResourceProvider) = GetSeriesListUseCase(schedulers, repository, resourceProvider)
+    internal fun provideGetSeriesListUseCase(schedulers: SchedulersProvider,
+                                             repository: SerieRepository,
+                                             resourceProvider: ResourceProvider) = GetSeriesListUseCase(schedulers, repository, resourceProvider)
 
     @Provides
     @Singleton
-    internal fun provideSerieRepository(schedulers: SchedulersProvider,
+    internal fun provideGetSerieUseCase(schedulers: SchedulersProvider,
                                         repository: SerieRepository,
                                         resourceProvider: ResourceProvider) = GetSerieUseCase(schedulers, repository, resourceProvider)
 
