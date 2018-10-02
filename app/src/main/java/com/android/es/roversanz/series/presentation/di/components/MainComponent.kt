@@ -1,13 +1,13 @@
-package com.android.es.roversanz.series.di.components
+package com.android.es.roversanz.series.presentation.di.components
 
 import android.content.Context
-import com.android.es.roversanz.series.data.repository.SerieRepository
-import com.android.es.roversanz.series.di.MySchedulers
-import com.android.es.roversanz.series.di.module.ApplicationModule
+import com.android.es.roversanz.series.data.SerieRepository
+import com.android.es.roversanz.series.data.provider.SchedulersProvider
 import com.android.es.roversanz.series.di.module.LoggerModule
-import com.android.es.roversanz.series.di.module.RepositoryModule
-import com.android.es.roversanz.series.utils.ResourceProvider
+import com.android.es.roversanz.series.presentation.di.module.ApplicationModule
+import com.android.es.roversanz.series.presentation.di.module.RepositoryModule
 import com.android.es.roversanz.series.utils.logger.Logger
+import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import dagger.Component
 import javax.inject.Singleton
 
@@ -21,7 +21,7 @@ interface MainComponent {
 
     fun provideLogger(): Logger
 
-    fun provideSchedulers(): MySchedulers
+    fun provideSchedulers(): SchedulersProvider
 
     fun provideSerieRepository(): SerieRepository
 

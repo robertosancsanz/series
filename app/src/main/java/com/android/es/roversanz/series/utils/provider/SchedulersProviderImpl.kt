@@ -1,18 +1,10 @@
-package com.android.es.roversanz.series.di
+package com.android.es.roversanz.series.utils.provider
 
-import io.reactivex.Scheduler
+import com.android.es.roversanz.series.data.provider.SchedulersProvider
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers.io
 
-interface MySchedulers {
-
-    fun backgroundThread(): Scheduler
-
-    fun uiThread(): Scheduler
-
-}
-
-class SchedulersImpl : MySchedulers {
+class SchedulersProviderImpl : SchedulersProvider {
 
     override fun backgroundThread() = io()
 

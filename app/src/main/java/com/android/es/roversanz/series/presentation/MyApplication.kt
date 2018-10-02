@@ -1,9 +1,10 @@
-package com.android.es.roversanz.series
+package com.android.es.roversanz.series.presentation
 
 import android.app.Application
-import com.android.es.roversanz.series.di.components.DaggerMainComponent
-import com.android.es.roversanz.series.di.components.MainComponent
-import com.android.es.roversanz.series.di.module.ApplicationModule
+import com.android.es.roversanz.series.BuildConfig
+import com.android.es.roversanz.series.presentation.di.components.DaggerMainComponent
+import com.android.es.roversanz.series.presentation.di.components.MainComponent
+import com.android.es.roversanz.series.presentation.di.module.ApplicationModule
 import com.facebook.stetho.Stetho
 import com.squareup.leakcanary.LeakCanary
 
@@ -18,9 +19,11 @@ class MyApplication : Application() {
         initializeInjector()
 
         if (BuildConfig.DEBUG) {
+
             initializeLeakCanary()
 
             initializeStetho()
+
         }
     }
 

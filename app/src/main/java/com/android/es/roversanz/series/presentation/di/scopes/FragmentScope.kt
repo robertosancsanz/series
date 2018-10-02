@@ -1,4 +1,4 @@
-package com.android.es.roversanz.series.di.scopes
+package com.android.es.roversanz.series.presentation.di.scopes
 
 import javax.inject.Scope
 

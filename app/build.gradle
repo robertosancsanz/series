@@ -88,7 +88,7 @@ dependencies {
 
     implementation localLibraries.architecture.extensions
     implementation localLibraries.architecture.viewmodel
-    implementation localLibraries.architecture.livedataCore
+    implementation localLibraries.architecture.livedata
     implementation localLibraries.architecture.runtime
 
     //endregion

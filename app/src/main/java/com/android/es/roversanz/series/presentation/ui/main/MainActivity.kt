@@ -1,24 +1,15 @@
-package com.android.es.roversanz.series.ui.main
+package com.android.es.roversanz.series.presentation.ui.main
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.android.es.roversanz.series.MyApplication
 import com.android.es.roversanz.series.R
-import com.android.es.roversanz.series.di.components.MainComponent
-import com.android.es.roversanz.series.di.scopes.ActivityScope
-import com.android.es.roversanz.series.utils.ResourceProvider
+import com.android.es.roversanz.series.presentation.MyApplication
+import com.android.es.roversanz.series.presentation.di.components.MainComponent
+import com.android.es.roversanz.series.presentation.di.scopes.ActivityScope
 import com.android.es.roversanz.series.utils.app
-import com.android.es.roversanz.series.utils.logger.Logger
 import dagger.Component
-import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var logger: Logger
-
-    @Inject
-    lateinit var resourceProvider: ResourceProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,9 +17,7 @@ class MainActivity : AppCompatActivity() {
 
         inject(app())
 
-        logger.d(MainActivity::class.java.simpleName, "Creating: ${resourceProvider.getString(R.string.app_name)}")
     }
-
 
     private fun inject(app: MyApplication) {
         DaggerMainActivity_MainActivityComponent.builder()
