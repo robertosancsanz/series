@@ -12,7 +12,6 @@ import com.android.es.roversanz.series.R
 import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
-import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.app
 import dagger.Component
 import javax.inject.Inject
@@ -24,15 +23,14 @@ class ListFragment : Fragment() {
     }
 
     @Inject
-    lateinit var useCase: GetSeriesListUseCase
+    lateinit var factory: FactorySeriesListViewModel
 
     private val viewModel: SeriesListViewModel by lazy {
-        ViewModelProviders.of(this, FactorySeriesListViewModel(useCase))[SeriesListViewModel::class
-                .java]
+        ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?)
-            = inflater.inflate(R.layout.fragment_list_series, container)
+            = inflater.inflate(R.layout.fragment_list_series, null)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
