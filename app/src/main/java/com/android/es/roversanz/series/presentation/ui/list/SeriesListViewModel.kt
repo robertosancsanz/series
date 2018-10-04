@@ -11,6 +11,10 @@ class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel
     }
 
     init {
+        refresh()
+    }
+
+    fun refresh() {
         state.postValue(SeriesListState.BUSY)
         useCase.invoke({
             state.postValue(SeriesListState.DONE(it))
@@ -20,4 +24,5 @@ class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel
     }
 
     fun getState() = state
+
 }
