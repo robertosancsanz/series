@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<android.support.v4.widget.SwipeRefreshLayout
+    android:id="@+id/swiperefresh"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swiperefresh"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/colorBackground">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/series_list"
@@ -22,6 +22,18 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
+        <include
+            android:id="@+id/series_empty_list"
+            layout="@layout/item_empty"
+            android:visibility="gone"/>
 
-</android.support.constraint.ConstraintLayout>
+        <include
+            android:id="@+id/series_error_list"
+            layout="@layout/item_error"
+            android:visibility="gone"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.v4.widget.SwipeRefreshLayout>
+
+
