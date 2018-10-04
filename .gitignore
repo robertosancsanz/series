@@ -1,51 +1,29 @@
-#Android Studio related files
-.gradle/
-.gradle/*
-.gradletasknamecache
-local.gradle
-local-*.gradle
-.idea/
-.idea/*
-/.idea/*
-.DS_Store
-*.iml
-qualityresult.txt
-release_notes-*.xml
-.externalToolBuilders/
-target/
-reports/
-.lock
-.log
-.mylyn
-ingmobile-keystore
-version.ini
-hack/*
-default.properties
-.metadata/
-proguard.*
-line.txt
-*.apk
-*.apk.d
-build
-dist
-keystore
-snippets.rtf
-Knowledge.txt
+# Generated files
+bin/
 gen/
-tmp/
-R.java
-Thumbs.db
-.DS*
-upload*.sh
-mycert.pem
-ant.libs/Archive.zip
-droid*.jar
-dex2jar-0.0.9.8/
-*.pyx
+out/
+
+# Gradle files
+.gradle/
+/*/build/
+build/
+
+# Local configuration file (sdk path, etc)
 local.properties
-last-endpoint
-.sonar/
-junit*.properties
-testlogs/
-*.swp
+
+# Log Files
+*.log
+
+# Android Studio captures folder
 captures/
+
+# IntelliJ
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries
+.idea/caches
+*.iml
