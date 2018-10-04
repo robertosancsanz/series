@@ -51,11 +51,13 @@ android {
 dependencies {
 
     // region Common
+
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation localLibraries.android.appcompat
     implementation localLibraries.android.support
     implementation localLibraries.android.design
     implementation localLibraries.android.constraintLayout
+
     //endregion
 
     implementation localLibraries.android.kotlin
@@ -107,6 +109,13 @@ dependencies {
     implementation localLibraries.android.databinding
     annotationProcessor localLibraries.android.dataBindingCompiler
     implementation localLibraries.android.dataBindingAdapter
+
+    //endregion
+
+    // region Glide
+
+    implementation localLibraries.img.glide
+    annotationProcessor localLibraries.img.glideCompiler
 
     //endregion
 
