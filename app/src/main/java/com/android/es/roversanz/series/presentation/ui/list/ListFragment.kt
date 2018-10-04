@@ -16,6 +16,7 @@ import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.utils.app
+import com.bumptech.glide.Glide
 import dagger.Component
 import kotlinx.android.synthetic.main.fragment_list_series.*
 import kotlinx.android.synthetic.main.item_serie.view.*
@@ -111,6 +112,8 @@ class SeriesAdapter : RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {
         fun onBind(serie: Serie) {
             itemView.serie_title.text = serie.title
             itemView.serie_description.text = serie.description
+            Glide.with(itemView.context).load(serie.url).into(itemView.serie_image)
+
         }
 
     }

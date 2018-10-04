@@ -14,6 +14,7 @@ def _versions = [
         okhttpinterceptor            : '3.8.1',
         stetho                       : '1.5.0',
         leakcanary                   : '1.6.1',
+        glide                        : '4.8.0',
 //        mvpLiveDataVersion           : '1.1.0',
 //
 //        analytics                    : '0.6.0',
@@ -47,15 +48,15 @@ def _libraries = [
         ],
         architecture: [
                 // ViewModel and LiveData
-                extensions  : "android.arch.lifecycle:extensions:${_versions.architectureComponentsVersion}",
+                extensions: "android.arch.lifecycle:extensions:${_versions.architectureComponentsVersion}",
                 // alternatively - just ViewModel
-                viewmodel   : "android.arch.lifecycle:viewmodel:${_versions.architectureComponentsVersion}",
+                viewmodel : "android.arch.lifecycle:viewmodel:${_versions.architectureComponentsVersion}",
                 // alternatively - just LiveData
-                livedata    : "android.arch.lifecycle:livedata:${_versions.architectureComponentsVersion}",
+                livedata  : "android.arch.lifecycle:livedata:${_versions.architectureComponentsVersion}",
 //                livedataCore: "android.arch.lifecycle:livedata-core:${_versions.architectureComponentsVersion}",
                 // alternatively - Lifecycles only (no ViewModel or LiveData).
                 // Support library depends on this lightweight import
-                runtime     : "android.arch.lifecycle:runtime:${_versions.architectureComponentsVersion}",
+                runtime   : "android.arch.lifecycle:runtime:${_versions.architectureComponentsVersion}",
 //                coreRuntime : "android.arch.core:runtime:${_versions.architectureComponentsVersion}",
 //        annotationProcessor "android.arch.lifecycle:compiler:$lifecycle_version" // use kapt for Kotlin
         ],
@@ -75,6 +76,10 @@ def _libraries = [
                 rxAndroid: "io.reactivex.rxjava2:rxandroid:${_versions.rxAndroid}",
                 rxJava   : "io.reactivex.rxjava2:rxjava:${_versions.rxJava}",
                 rxKotlin : "io.reactivex.rxjava2:rxkotlin:${_versions.rxJava}",
+        ],
+        img         : [
+                glide        : "com.github.bumptech.glide:glide:${_versions.glide}",
+                glideCompiler: "com.github.bumptech.glide:compiler:${_versions.glide}"
         ],
         utils       : [
                 stetho    : "com.facebook.stetho:stetho:${_versions.stetho}",
