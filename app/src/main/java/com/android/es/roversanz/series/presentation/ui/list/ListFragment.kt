@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,12 +20,15 @@ import com.bumptech.glide.Glide
 import dagger.Component
 import kotlinx.android.synthetic.main.fragment_list_series.*
 import kotlinx.android.synthetic.main.item_serie.view.*
-
 import javax.inject.Inject
 
 class ListFragment : Fragment() {
 
     companion object {
+
+        private val TAG: String = ListFragment::class.java.simpleName
+        private const val NUM_ITEMS: Int = 2
+
         fun getInstance() = ListFragment()
     }
 
@@ -55,7 +57,6 @@ class ListFragment : Fragment() {
             layoutManager = GridLayoutManager(context, 2)
         }
 
-
         viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
 
         swiperefresh.setOnRefreshListener {
@@ -63,33 +64,52 @@ class ListFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.getState().removeObservers(this)
+    }
+
     private fun handleState(state: SeriesListState) {
         when (state) {
             SeriesListState.INITIAL -> {
-                logger.d("LIST", "Initial State")
+                //Do nothing
             }
             SeriesListState.BUSY -> {
-                logger.d("LIST", "Show Loading")
                 swiperefresh.isRefreshing = true
             }
             SeriesListState.EMPTY -> {
-                swiperefresh.isRefreshing = false
-                logger.d("LIST", "The list is empty")
+                handleEmptyState()
             }
             is SeriesListState.DONE -> {
-                swiperefresh.isRefreshing = false
-                updateList(state.data)
+                handleSoneState(state.data)
             }
             is SeriesListState.ERROR -> {
-                swiperefresh.isRefreshing = false
-                logger.d("LIST", "Show the error")
+                handleErrorState(state.message)
             }
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewModel.getState().removeObservers(this)
+    private fun handleEmptyState() {
+        swiperefresh.isRefreshing = false
+        series_empty_list.visibility = View.VISIBLE
+        series_list.visibility = View.GONE
+        series_error_list.visibility = View.GONE
+    }
+
+    private fun handleSoneState(list: List<Serie>) {
+        swiperefresh.isRefreshing = false
+        series_empty_list.visibility = View.GONE
+        series_list.visibility = View.VISIBLE
+        series_error_list.visibility = View.GONE
+        updateList(list)
+    }
+
+    private fun handleErrorState(message: String) {
+        logger.e(TAG, "Error: $message")
+        swiperefresh.isRefreshing = false
+        series_empty_list.visibility = View.GONE
+        series_list.visibility = View.GONE
+        series_error_list.visibility = View.VISIBLE
     }
 
     private fun updateList(list: List<Serie>) {
@@ -117,9 +137,7 @@ class SeriesAdapter : RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {
 
     private var series: List<Serie> = listOf()
 
-    override fun onCreateViewHolder(p0: ViewGroup, p1: Int): SeriesViewHolder {
-        return SeriesViewHolder(LayoutInflater.from(p0.context).inflate(R.layout.item_serie, null))
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder = SeriesViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_serie, null))
 
     override fun getItemCount() = series.size
 
@@ -132,7 +150,7 @@ class SeriesAdapter : RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {
         notifyDataSetChanged()
     }
 
-    class SeriesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class SeriesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         fun onBind(serie: Serie) {
             itemView.serie_title.text = serie.title

@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">SeriesMVVM</string>
+
     <string name="error_general">An error has occurred. Try again later.</string>
+    <string name="error_series_list">@string/error_general</string>
+    <string name="error_series_list_empty">Sorry but you don´t have any serie available</string>
 </resources>

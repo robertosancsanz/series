@@ -2,6 +2,7 @@ package com.android.es.roversanz.series.presentation.ui.list
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 
 class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel() {
@@ -14,15 +15,21 @@ class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel
         refresh()
     }
 
+    fun getState() = state
+
     fun refresh() {
         state.postValue(SeriesListState.BUSY)
-        useCase.invoke({
-            state.postValue(SeriesListState.DONE(it))
-        }, {
-            state.postValue(SeriesListState.ERROR(it))
-        })
+        useCase.invoke({ onSuccess(it) }, { onError(it) })
     }
 
-    fun getState() = state
+    private fun onSuccess(list: List<Serie>) = if (list.isEmpty()) {
+        state.postValue(SeriesListState.EMPTY)
+    } else {
+        state.postValue(SeriesListState.DONE(list))
+    }
+
+    private fun onError(message: String) {
+        state.postValue(SeriesListState.ERROR(message))
+    }
 
 }
