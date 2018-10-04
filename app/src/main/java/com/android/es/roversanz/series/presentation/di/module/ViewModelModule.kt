@@ -13,5 +13,4 @@ class ViewModelModule {
     @Singleton
     internal fun provideFactorySeriesListViewModel(useCase: GetSeriesListUseCase) = FactorySeriesListViewModel(useCase)
 
-
 }
