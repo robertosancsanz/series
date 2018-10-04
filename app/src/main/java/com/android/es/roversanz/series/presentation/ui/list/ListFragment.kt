@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,10 +16,12 @@ import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.utils.app
+import com.android.es.roversanz.series.utils.logger.Logger
 import com.bumptech.glide.Glide
 import dagger.Component
 import kotlinx.android.synthetic.main.fragment_list_series.*
 import kotlinx.android.synthetic.main.item_serie.view.*
+
 import javax.inject.Inject
 
 class ListFragment : Fragment() {
@@ -30,6 +32,9 @@ class ListFragment : Fragment() {
 
     @Inject
     lateinit var factory: FactorySeriesListViewModel
+
+    @Inject
+    lateinit var logger: Logger
 
     private val viewModel: SeriesListViewModel by lazy {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
@@ -50,16 +55,36 @@ class ListFragment : Fragment() {
             layoutManager = GridLayoutManager(context, 2)
         }
 
-        viewModel.getState().observe(this, Observer { state ->
-            when (state) {
-                SeriesListState.INITIAL -> Log.d("LIST", "Initial State")
-                SeriesListState.BUSY -> Log.d("LIST", "Show Loading")
-                SeriesListState.EMPTY -> Log.d("LIST", "The list is empty")
-                is SeriesListState.DONE -> updateList(state.data)
-                is SeriesListState.ERROR -> Log.d("LIST", "Show the error")
-                else -> Log.d("LIST", "Something is wrong")
+
+        viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
+
+        swiperefresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
+    }
+
+    private fun handleState(state: SeriesListState) {
+        when (state) {
+            SeriesListState.INITIAL -> {
+                logger.d("LIST", "Initial State")
             }
-        })
+            SeriesListState.BUSY -> {
+                logger.d("LIST", "Show Loading")
+                swiperefresh.isRefreshing = true
+            }
+            SeriesListState.EMPTY -> {
+                swiperefresh.isRefreshing = false
+                logger.d("LIST", "The list is empty")
+            }
+            is SeriesListState.DONE -> {
+                swiperefresh.isRefreshing = false
+                updateList(state.data)
+            }
+            is SeriesListState.ERROR -> {
+                swiperefresh.isRefreshing = false
+                logger.d("LIST", "Show the error")
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -68,7 +93,7 @@ class ListFragment : Fragment() {
     }
 
     private fun updateList(list: List<Serie>) {
-        Log.d("LIST", "Show the list: ${list.size}")
+        logger.d("LIST", "Show the list: ${list.size}")
         seriesAdapter.updateSeries(list)
     }
 
