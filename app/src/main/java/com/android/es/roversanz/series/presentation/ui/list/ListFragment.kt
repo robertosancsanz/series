@@ -18,8 +18,13 @@ import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.bumptech.glide.Glide
 import dagger.Component
-import kotlinx.android.synthetic.main.fragment_list_series.*
-import kotlinx.android.synthetic.main.item_serie.view.*
+import kotlinx.android.synthetic.main.fragment_list_series.series_empty_list
+import kotlinx.android.synthetic.main.fragment_list_series.series_error_list
+import kotlinx.android.synthetic.main.fragment_list_series.series_list
+import kotlinx.android.synthetic.main.fragment_list_series.swiperefresh
+import kotlinx.android.synthetic.main.item_serie.view.serie_description
+import kotlinx.android.synthetic.main.item_serie.view.serie_image
+import kotlinx.android.synthetic.main.item_serie.view.serie_title
 import javax.inject.Inject
 
 class ListFragment : Fragment() {
@@ -38,26 +43,31 @@ class ListFragment : Fragment() {
     @Inject
     lateinit var logger: Logger
 
+    private lateinit var seriesAdapter: SeriesAdapter
     private val viewModel: SeriesListViewModel by lazy {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = inflater.inflate(R.layout.fragment_list_series, null)
-
-    private lateinit var seriesAdapter: SeriesAdapter
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View
+            = inflater.inflate(R.layout.fragment_list_series, null)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         activity?.let { inject(it.app()) }
 
-        seriesAdapter = SeriesAdapter()
-        series_list.apply {
-            adapter = seriesAdapter
-            layoutManager = GridLayoutManager(context, 2)
+        seriesAdapter = SeriesAdapter {
+            logger.d(TAG, "Click on item: ${it.title}")
         }
 
-        viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
+        series_list.apply {
+            adapter = seriesAdapter
+            layoutManager = GridLayoutManager(context, NUM_ITEMS)
+        }
+
+        viewModel.getState().observe(this, Observer { state ->
+            state?.let { handleState(it) }
+        })
 
         swiperefresh.setOnRefreshListener {
             viewModel.refresh()
@@ -69,48 +79,29 @@ class ListFragment : Fragment() {
         viewModel.getState().removeObservers(this)
     }
 
+    //region handle state
+
     private fun handleState(state: SeriesListState) {
-        when (state) {
-            SeriesListState.INITIAL -> {
-                //Do nothing
-            }
-            SeriesListState.BUSY -> {
-                swiperefresh.isRefreshing = true
-            }
-            SeriesListState.EMPTY -> {
-                handleEmptyState()
-            }
-            is SeriesListState.DONE -> {
-                handleSoneState(state.data)
-            }
-            is SeriesListState.ERROR -> {
-                handleErrorState(state.message)
-            }
+        swiperefresh.isRefreshing = state == SeriesListState.BUSY
+
+        series_empty_list.setVisibility(state == SeriesListState.EMPTY)
+        series_list.setVisibility(state is SeriesListState.DONE)
+        series_error_list.setVisibility(state is SeriesListState.ERROR)
+
+        if (state is SeriesListState.DONE) {
+            updateList(state.data)
         }
     }
 
-    private fun handleEmptyState() {
-        swiperefresh.isRefreshing = false
-        series_empty_list.visibility = View.VISIBLE
-        series_list.visibility = View.GONE
-        series_error_list.visibility = View.GONE
+    private fun View.setVisibility(visibility: Boolean) {
+        if (visibility) {
+            this.visibility = View.VISIBLE
+        } else {
+            this.visibility = View.GONE
+        }
     }
 
-    private fun handleSoneState(list: List<Serie>) {
-        swiperefresh.isRefreshing = false
-        series_empty_list.visibility = View.GONE
-        series_list.visibility = View.VISIBLE
-        series_error_list.visibility = View.GONE
-        updateList(list)
-    }
-
-    private fun handleErrorState(message: String) {
-        logger.e(TAG, "Error: $message")
-        swiperefresh.isRefreshing = false
-        series_empty_list.visibility = View.GONE
-        series_list.visibility = View.GONE
-        series_error_list.visibility = View.VISIBLE
-    }
+    //endregion
 
     private fun updateList(list: List<Serie>) {
         logger.d("LIST", "Show the list: ${list.size}")
@@ -131,31 +122,38 @@ class ListFragment : Fragment() {
         fun inject(fragment: ListFragment)
     }
 
-}
 
-class SeriesAdapter : RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {
+    private inner class SeriesAdapter(private val listener: ((Serie) -> Unit)?) :
+            RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {
 
-    private var series: List<Serie> = listOf()
+        private var series: List<Serie> = listOf()
 
-    override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder = SeriesViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_serie, null))
+        override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder
+                = SeriesViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_serie, null))
 
-    override fun getItemCount() = series.size
+        override fun getItemCount() = series.size
 
-    override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
-        holder.onBind(series[position])
-    }
+        override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
+            series[position].let { serie ->
+                holder.onBind(serie)
+                holder.itemView.setOnClickListener {
+                    listener?.invoke(serie)
+                }
+            }
+        }
 
-    fun updateSeries(list: List<Serie>) {
-        series = list
-        notifyDataSetChanged()
-    }
+        fun updateSeries(list: List<Serie>) {
+            series = list
+            notifyDataSetChanged()
+        }
 
-    inner class SeriesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private inner class SeriesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
-        fun onBind(serie: Serie) {
-            itemView.serie_title.text = serie.title
-            itemView.serie_description.text = serie.description
-            Glide.with(itemView.context).load(serie.url).into(itemView.serie_image)
+            fun onBind(serie: Serie) {
+                itemView.serie_title.text = serie.title
+                itemView.serie_description.text = serie.description
+                Glide.with(itemView.context).load(serie.url).into(itemView.serie_image)
+            }
 
         }
 
