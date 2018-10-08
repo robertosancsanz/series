@@ -10,11 +10,15 @@ import com.android.es.roversanz.series.usecases.UseCase
 
 class DownloadFileUseCase(private val downloadManager: DownloadManager) : UseCase {
 
+    companion object {
+        private val TAG: String = "DOWNLOAD"
+    }
+
     operator fun invoke(serie: Serie) {
 
 
         val request = DownloadManager.Request(Uri.parse(serie.downloadUrl)).apply {
-            Log.d("DOWNLOAD", "Path: " + Environment.DIRECTORY_DOWNLOADS + "/Series/${serie.title}.mp4")
+            Log.d(TAG, "Path: " + Environment.DIRECTORY_DOWNLOADS + "/Series/${serie.title}.mp4")
 
             setTitle("Downloading ${serie.title}")
             setDescription("Downloading ${serie.title}")
@@ -25,8 +29,10 @@ class DownloadFileUseCase(private val downloadManager: DownloadManager) : UseCas
             setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
             setVisibleInDownloadsUi(false)
         }
+
         val refid = downloadManager.enqueue(request)
-        Log.d("DOWNLOAD", "Download started: $refid")
+
+        Log.d(TAG, "Download started: $refid")
     }
 
 }
