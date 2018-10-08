@@ -73,7 +73,7 @@ class SeriesDetailFragment : Fragment() {
         serie_title.text = serie.title
         serie_subtitle.text = serie.subtitle
         serie_description.text = serie.description
-        context?.let { ctx -> Glide.with(ctx).load(serie.url).into(serie_image) }
+        context?.let { ctx -> Glide.with(ctx).load(serie.picture).into(serie_image) }
     }
 
     //endregion
