@@ -16,13 +16,19 @@ class LocalDataPersistence : DataPersistence {
 "entre jefes, sus esposas crueles, mujeres del hogar y sus compañeras sirvientas –de las que cualquiera podría ser una espía de Gilead– con un " +
 "único objetivo: sobrevivir y encontrar a la hija que le arrebataron.",
 4.2,"https://www.ecestaticos.com/imagestatic/clipping/03b/c8f/03bc8fb84150aa179e63bc8898802516/imagen-sin-titulo.jpg?mtime=1531473691",
-"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg"                 ),
-                Serie(2, "Picky Blinders ", "Son mu malos", "Serie de TV (2013-Actualidad). Una familia de " +
+//More videos on https://www.sample-videos.com/
+//"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg"
+//"https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4"
+"https://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_30mb.mp4"
+                ),
+                Serie(2, "Picky Blinders", "Son mu malos", "Serie de TV (2013-Actualidad). Una familia de " +
 "gánsters asentada en Birmingham tras la Primera Guerra Mundial (1914-1918), dirige un local de apuestas hípicas. Las actividades del ambicioso " +
 "jefe de la banda llaman la atención del Inspector jefe Chester Campbell, un detective de la Real Policía Irlandesa que es enviado desde Belfast " +
 "para limpiar la ciudad y acabar con la banda.", 4.4,
 "https://i.blogs.es/f8389e/espinof-critica-de-peaky-blinders-temporada-4/450_1000.jpg",
-"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg" ))
+//"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg"
+"https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_10mb.mp4"
+                ))
     }
 
     override fun fetchSeries(): List<Serie> = series

@@ -7,7 +7,7 @@ import com.android.es.roversanz.series.usecases.UseCase
 import com.android.es.roversanz.series.usecases.provider.SchedulersProvider
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
 
-class GetSerieUseCase(private val schedulers: SchedulersProvider,
+class GetSerieDetailUseCase(private val schedulers: SchedulersProvider,
                       private val repository: SerieRepository,
                       private val resourceProvider: ResourceProvider) : UseCase {
 

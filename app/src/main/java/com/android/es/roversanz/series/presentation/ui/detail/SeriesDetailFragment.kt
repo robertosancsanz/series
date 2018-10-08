@@ -1,10 +1,11 @@
 package com.android.es.roversanz.series.presentation.ui.detail
 
+import android.Manifest
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,12 +15,14 @@ import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DONE
+import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.utils.app
 import com.bumptech.glide.Glide
 import dagger.Component
 import dagger.Module
 import dagger.Provides
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_description
+import kotlinx.android.synthetic.main.fragment_detail_serie.serie_download_button
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_image
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_subtitle
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_title
@@ -50,16 +53,22 @@ class SeriesDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity?.let { inject(it.app()) }
+        activity?.let {
+            inject(it.app())
+            ActivityCompat.requestPermissions(it, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ), 123)
+        }
 
         viewModel.getState().observe(this, Observer { state ->
             state?.let {
-                Log.d(TAG, "State is $it")
                 if (it is DONE) {
                     bindItem(it.data)
                 }
             }
         })
+
+        serie_download_button.setOnClickListener { viewModel.downloadChapter() }
     }
 
     override fun onDestroyView() {
@@ -77,7 +86,6 @@ class SeriesDetailFragment : Fragment() {
     }
 
     //endregion
-
 
     private fun inject(app: MyApplication) {
         DaggerSeriesDetailFragment_SeriesDetailFragmentComponent.builder()
@@ -99,10 +107,11 @@ class SeriesDetailFragment : Fragment() {
 
         @Provides
         @FragmentScope
-        internal fun provideSeriesDetailViewModelFactory(): SeriesDetailViewModelFactory {
+        internal fun provideSeriesDetailViewModelFactory(useCase: DownloadFileUseCase):
+                SeriesDetailViewModelFactory {
             val serie: Serie = arguments?.get(SERIE_TAG) as? Serie
                                ?: throw ClassCastException("SeriesDetailFragment must initialize  with an item")
-            return SeriesDetailViewModelFactory(serie)
+            return SeriesDetailViewModelFactory(useCase, serie)
         }
     }
 

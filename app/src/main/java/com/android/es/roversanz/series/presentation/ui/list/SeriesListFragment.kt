@@ -63,7 +63,6 @@ class SeriesListFragment : Fragment() {
         }
 
         seriesAdapter = SeriesAdapter {
-            logger.d(TAG, "Click on item: ${it.title}")
             callback.onSerieSelected(it)
         }
 

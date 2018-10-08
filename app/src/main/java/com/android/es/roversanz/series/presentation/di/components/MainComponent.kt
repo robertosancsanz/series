@@ -8,6 +8,8 @@ import com.android.es.roversanz.series.presentation.di.module.RepositoryModule
 import com.android.es.roversanz.series.presentation.di.module.UseCasesModule
 import com.android.es.roversanz.series.presentation.di.module.ViewModelModule
 import com.android.es.roversanz.series.presentation.ui.list.SeriesListViewModelFactory
+import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.series.GetSerieDetailUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
@@ -28,6 +30,10 @@ interface MainComponent {
     fun provideSerieRepository(): SerieRepository
 
     fun provideGetSeriesListUseCase(): GetSeriesListUseCase
+
+    fun provideGetSerieDetailUseCase(): GetSerieDetailUseCase
+
+    fun provideDownloadFileUseCase(): DownloadFileUseCase
 
     fun provideSeriesListViewModelFactory(): SeriesListViewModelFactory
 
