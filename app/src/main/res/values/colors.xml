@@ -9,6 +9,8 @@
     <color name="colorAccent">#D32F2F</color>
     <color name="colorAccentLight">#9EACFB</color>
 
+    <color name="colorDivider">@color/colorAccentLight</color>
+
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#727272</color>
 

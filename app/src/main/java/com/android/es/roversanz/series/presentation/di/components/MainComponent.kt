@@ -7,7 +7,7 @@ import com.android.es.roversanz.series.presentation.di.module.ApplicationModule
 import com.android.es.roversanz.series.presentation.di.module.RepositoryModule
 import com.android.es.roversanz.series.presentation.di.module.UseCasesModule
 import com.android.es.roversanz.series.presentation.di.module.ViewModelModule
-import com.android.es.roversanz.series.presentation.ui.list.FactorySeriesListViewModel
+import com.android.es.roversanz.series.presentation.ui.list.SeriesListViewModelFactory
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
@@ -29,6 +29,6 @@ interface MainComponent {
 
     fun provideGetSeriesListUseCase(): GetSeriesListUseCase
 
-    fun provideFactorySeriesListViewModel(): FactorySeriesListViewModel
+    fun provideSeriesListViewModelFactory(): SeriesListViewModelFactory
 
 }

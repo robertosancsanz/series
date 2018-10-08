@@ -38,7 +38,7 @@
 
     <TextView
         android:id="@+id/serie_description"
-        style="@style/serie_description"
+        style="@style/serie_subtitle"
         android:layout_width="@dimen/padding_zero_size"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/padding_normal_size"

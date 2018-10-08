@@ -79,10 +79,19 @@
         <item name="android:maxLines">1</item>
     </style>
 
-    <style name="serie_description" parent="MyText.Small">
+    <style name="serie_detail_title" parent="MyText.Big">
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="serie_subtitle" parent="MyText.Medium">
         <item name="android:textColor">@color/colorAccent</item>
         <item name="android:maxLines">3</item>
         <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="serie_description" parent="MyText.Small">
+        <item name="android:textColor">@color/black</item>
     </style>
 
     <style name="serie_empty" parent="MyText.Medium">
