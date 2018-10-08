@@ -158,7 +158,7 @@ class SeriesListFragment : Fragment() {
             fun onBind(serie: Serie) {
                 itemView.serie_title.text = serie.title
                 itemView.serie_description.text = serie.subtitle
-                Glide.with(itemView.context).load(serie.url).into(itemView.serie_image)
+                Glide.with(itemView.context).load(serie.picture).into(itemView.serie_image)
             }
 
         }
