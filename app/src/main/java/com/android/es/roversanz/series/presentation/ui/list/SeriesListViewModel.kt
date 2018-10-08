@@ -1,5 +1,6 @@
 package com.android.es.roversanz.series.presentation.ui.list
 
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.android.es.roversanz.series.domain.Serie
@@ -15,7 +16,7 @@ class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel
         refresh()
     }
 
-    fun getState() = state
+    fun getState(): LiveData<SeriesListState> = state
 
     fun refresh() {
         state.postValue(SeriesListState.BUSY)

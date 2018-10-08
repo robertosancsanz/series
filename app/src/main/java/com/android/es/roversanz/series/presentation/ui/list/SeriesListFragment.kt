@@ -28,23 +28,24 @@ import kotlinx.android.synthetic.main.item_serie.view.serie_image
 import kotlinx.android.synthetic.main.item_serie.view.serie_title
 import javax.inject.Inject
 
-class ListFragment : Fragment() {
+class SeriesListFragment : Fragment() {
 
     companion object {
 
-        private val TAG: String = ListFragment::class.java.simpleName
+        private val TAG: String = SeriesListFragment::class.java.simpleName
         private const val NUM_ITEMS: Int = 2
 
-        fun getInstance() = ListFragment()
+        fun getInstance() = SeriesListFragment()
     }
 
     @Inject
-    lateinit var factory: FactorySeriesListViewModel
+    lateinit var factory: SeriesListViewModelFactory
 
     @Inject
     lateinit var logger: Logger
 
     private lateinit var seriesAdapter: SeriesAdapter
+    private lateinit var callback: SeriesListFragmentListener
     private val viewModel: SeriesListViewModel by lazy {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
@@ -55,10 +56,15 @@ class ListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        activity?.let { inject(it.app()) }
+        activity?.let {
+            inject(it.app())
+            callback = it as? SeriesListFragmentListener
+                    ?: throw ClassCastException("${it::class.java.simpleName} must implements ListFragmentListener")
+        }
 
         seriesAdapter = SeriesAdapter {
             logger.d(TAG, "Click on item: ${it.title}")
+            callback.onSerieSelected(it)
         }
 
         series_list.apply {
@@ -110,7 +116,7 @@ class ListFragment : Fragment() {
     }
 
     private fun inject(app: MyApplication) {
-        DaggerListFragment_ListFragmentComponent.builder()
+        DaggerSeriesListFragment_SeriesListFragmentComponent.builder()
                 .mainComponent(app.component)
                 .build()
                 .inject(this)
@@ -118,9 +124,9 @@ class ListFragment : Fragment() {
 
     @FragmentScope
     @Component(dependencies = [(MainComponent::class)])
-    internal interface ListFragmentComponent {
+    internal interface SeriesListFragmentComponent {
 
-        fun inject(fragment: ListFragment)
+        fun inject(fragment: SeriesListFragment)
     }
 
 
@@ -129,8 +135,7 @@ class ListFragment : Fragment() {
 
         private var series: List<Serie> = listOf()
 
-        override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder
-                = SeriesViewHolder(parent.inflate(R.layout.item_serie))
+        override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder = SeriesViewHolder(parent.inflate(R.layout.item_serie))
 
         override fun getItemCount() = series.size
 
@@ -152,7 +157,7 @@ class ListFragment : Fragment() {
 
             fun onBind(serie: Serie) {
                 itemView.serie_title.text = serie.title
-                itemView.serie_description.text = serie.description
+                itemView.serie_description.text = serie.subtitle
                 Glide.with(itemView.context).load(serie.url).into(itemView.serie_image)
             }
 
@@ -160,5 +165,8 @@ class ListFragment : Fragment() {
 
     }
 
-}
+    interface SeriesListFragmentListener {
+        fun onSerieSelected(serie: Serie)
+    }
 
+}

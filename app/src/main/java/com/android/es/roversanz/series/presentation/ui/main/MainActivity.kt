@@ -7,14 +7,17 @@ import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.android.es.roversanz.series.R
+import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.ActivityScope
-import com.android.es.roversanz.series.presentation.ui.list.ListFragment
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailFragment
+import com.android.es.roversanz.series.presentation.ui.list.SeriesListFragment
+import com.android.es.roversanz.series.presentation.ui.list.SeriesListFragment.SeriesListFragmentListener
 import com.android.es.roversanz.series.utils.app
 import dagger.Component
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SeriesListFragmentListener {
 
     companion object {
         private val TAG = MainActivity::class.java.simpleName
@@ -32,10 +35,12 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.getState().observe(this, Observer { state ->
             when (state) {
-                MainState.INITIAL -> Log.d(TAG, "Initial State")
-                MainState.LIST -> loadFragment(ListFragment.getInstance(), ListFragment::class.java.simpleName, false)
-                is MainState.DETAIL -> Log.d(TAG, "Load Detail")
-                else -> Log.d(TAG, "Something is wrong")
+                MainState.INITIAL   -> {
+                    // Do nothing
+                }
+                MainState.LIST      -> loadFragment(SeriesListFragment.getInstance(), SeriesListFragment::class.java.simpleName, false)
+                is MainState.DETAIL -> loadFragment(SeriesDetailFragment.getInstance(state.serie), SeriesDetailFragment::class.java.simpleName, true)
+                else                -> Log.d(TAG, "Something is wrong")
             }
         })
     }
@@ -43,6 +48,10 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         viewModel.getState().removeObservers(this)
+    }
+
+    override fun onSerieSelected(serie: Serie) {
+        viewModel.onSerieSelected(serie)
     }
 
     private fun loadFragment(fragment: Fragment, tag: String, addToBackStack: Boolean) {
@@ -63,7 +72,6 @@ class MainActivity : AppCompatActivity() {
                 .build()
                 .inject(this)
     }
-
 
     @ActivityScope
     @Component(dependencies = [(MainComponent::class)])

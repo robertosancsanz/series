@@ -38,6 +38,7 @@
 
     <!--Adapter-->
     <dimen name="item_height">200dp</dimen>
+    <dimen name="item_big_height">400dp</dimen>
     <!--Adapter-->
 
 

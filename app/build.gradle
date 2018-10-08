@@ -31,6 +31,10 @@ android {
         }
     }
 
+    androidExtensions {
+        experimental = true
+    }
+
     dexOptions {
         javaMaxHeapSize "2048M"
     }
