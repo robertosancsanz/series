@@ -10,5 +10,6 @@ data class Serie(
         val subtitle: String,
         val description: String,
         val stars: Double,
-        val picture: String
+        val picture: String,
+        val downloadUrl: String
 ) : Parcelable
