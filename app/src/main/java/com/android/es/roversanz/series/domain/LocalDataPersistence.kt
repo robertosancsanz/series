@@ -15,12 +15,14 @@ class LocalDataPersistence : DataPersistence {
 "de repoblar un mundo devastado. En esta horrible sociedad en la que una palabra inadecuada podría acabar con su vida, Defred se abre camino " +
 "entre jefes, sus esposas crueles, mujeres del hogar y sus compañeras sirvientas –de las que cualquiera podría ser una espía de Gilead– con un " +
 "único objetivo: sobrevivir y encontrar a la hija que le arrebataron.",
-4.2,"https://www.ecestaticos.com/imagestatic/clipping/03b/c8f/03bc8fb84150aa179e63bc8898802516/imagen-sin-titulo.jpg?mtime=1531473691"),
+4.2,"https://www.ecestaticos.com/imagestatic/clipping/03b/c8f/03bc8fb84150aa179e63bc8898802516/imagen-sin-titulo.jpg?mtime=1531473691",
+"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg"                 ),
                 Serie(2, "Picky Blinders ", "Son mu malos", "Serie de TV (2013-Actualidad). Una familia de " +
 "gánsters asentada en Birmingham tras la Primera Guerra Mundial (1914-1918), dirige un local de apuestas hípicas. Las actividades del ambicioso " +
 "jefe de la banda llaman la atención del Inspector jefe Chester Campbell, un detective de la Real Policía Irlandesa que es enviado desde Belfast " +
 "para limpiar la ciudad y acabar con la banda.", 4.4,
-"https://i.blogs.es/f8389e/espinof-critica-de-peaky-blinders-temporada-4/450_1000.jpg"))
+"https://i.blogs.es/f8389e/espinof-critica-de-peaky-blinders-temporada-4/450_1000.jpg",
+"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg" ))
     }
 
     override fun fetchSeries(): List<Serie> = series
