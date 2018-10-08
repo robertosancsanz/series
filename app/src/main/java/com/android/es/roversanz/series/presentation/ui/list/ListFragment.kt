@@ -15,6 +15,7 @@ import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.utils.app
+import com.android.es.roversanz.series.utils.inflate
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.bumptech.glide.Glide
 import dagger.Component
@@ -129,7 +130,7 @@ class ListFragment : Fragment() {
         private var series: List<Serie> = listOf()
 
         override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder
-                = SeriesViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_serie, null))
+                = SeriesViewHolder(parent.inflate(R.layout.item_serie))
 
         override fun getItemCount() = series.size
 
@@ -160,3 +161,4 @@ class ListFragment : Fragment() {
     }
 
 }
+
