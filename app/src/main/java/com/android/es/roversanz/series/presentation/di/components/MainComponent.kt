@@ -1,5 +1,6 @@
 package com.android.es.roversanz.series.presentation.di.components
 
+import android.app.DownloadManager
 import android.content.Context
 import com.android.es.roversanz.series.data.SerieRepository
 import com.android.es.roversanz.series.di.module.LoggerModule
@@ -28,6 +29,8 @@ interface MainComponent {
     fun provideLogger(): Logger
 
     fun provideSerieRepository(): SerieRepository
+
+    fun provideDownloadManager(): DownloadManager
 
     fun provideGetSeriesListUseCase(): GetSeriesListUseCase
 

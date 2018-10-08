@@ -27,9 +27,13 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".usecases.receivers.DownloadReceiver">
+        <receiver
+            android:name=".usecases.receivers.DownloadReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
+                <!--<action android:name="android.intent.action.VIEW_DOWNLOADS"/>-->
             </intent-filter>
         </receiver>
     </application>
