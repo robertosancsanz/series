@@ -34,12 +34,13 @@ class DownloadFileUseCase(
     @Suppress("ComplexMethod")
     operator fun invoke(
             serie: Serie,
-            onProgress: (String) -> Unit,
-            onSuccess: (File) -> Unit,
-            onPaused: () -> Unit,
-            onResumed: (String) -> Unit,
-            onDeleted: () -> Unit,
-            onError: ((String) -> Unit)?) {
+            onSuccess: (SerieDownloaded) -> Unit,
+            onError: ((SerieDownloaded) -> Unit)? = null,
+            onQueued: ((SerieDownloaded) -> Unit)? = null,
+            onProgress: ((SerieDownloaded) -> Unit)? = null,
+            onPaused: ((SerieDownloaded) -> Unit)? = null,
+            onResumed: ((SerieDownloaded) -> Unit)? = null,
+            onDeleted: ((SerieDownloaded) -> Unit)? = null) {
 
         val storageDir = File(Environment.getExternalStoragePublicDirectory(PATH), "Series/")
                 .apply {
@@ -57,6 +58,7 @@ class DownloadFileUseCase(
             override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
 //                logger.d(TAG, "onQueued: ${download.id} $waitingOnNetwork")
                 updateStatus(download)
+                onQueued?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
             }
 
             override fun onStarted(download: Download, downloadBlocks: List<DownloadBlock>, totalBlocks: Int) {
@@ -69,7 +71,7 @@ class DownloadFileUseCase(
 //                logger.d(TAG, "onProgress: ${download.id} -- ${download.progress} " +
 //                              "-- Speed:  $downloadedBytesPerSecond -- $etaInMilliSeconds ")
                 updateStatus(download)
-                onProgress.invoke(download.progress.toPercentage())
+                onProgress?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
             }
 
             override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
@@ -79,19 +81,19 @@ class DownloadFileUseCase(
 
             override fun onPaused(download: Download) {
 //                logger.d(TAG, "onPaused: ${download.id}")
-                onPaused.invoke()
+                onPaused?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
             }
 
             override fun onResumed(download: Download) {
 //                logger.d(TAG, "onResumed: ${download.id}")
-                onResumed.invoke(download.progress.toPercentage())
+                onResumed?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
             }
 
             override fun onCompleted(download: Download) {
 //                logger.d(TAG, "onCompleted: ${download.id} -- ${download.downloaded}")
                 updateStatus(download)
                 downloadManager.removeListener(this)
-                onSuccess.invoke(file)
+                onSuccess.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(), filePath = file.absolutePath))
             }
 
             override fun onCancelled(download: Download) {
@@ -110,15 +112,16 @@ class DownloadFileUseCase(
                 logger.d(TAG, "onDeleted: ${download.id}")
                 file.delete()
                 downloadManager.removeListener(this)
-                onDeleted.invoke()
+                onDeleted?.invoke(SerieDownloaded(serie = serie, state = download.status.name))
             }
 
             override fun onError(download: Download, error: Error, throwable: Throwable?) {
                 logger.d(TAG, "onError: ${download.id}")
                 file.delete()
                 downloadManager.removeListener(this)
-                onError?.invoke(error.throwable?.message
-                                ?: resourceProvider.getString(R.string.error_general))
+                val message = error.throwable?.message
+                              ?: resourceProvider.getString(R.string.error_general)
+                onError?.invoke(SerieDownloaded(serie = serie, state = download.status.name, error = message, progress = download.progress.toPercentage()))
             }
 
             override fun onWaitingNetwork(download: Download) {

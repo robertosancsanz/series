@@ -3,6 +3,7 @@ package com.android.es.roversanz.series.presentation.ui.list
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
@@ -18,7 +19,9 @@ import com.android.es.roversanz.series.presentation.ui.list.adapters.DownloadSer
 import com.android.es.roversanz.series.presentation.ui.list.adapters.SeriesAdapter
 import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.logger.Logger
+import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import com.android.es.roversanz.series.utils.setVisibility
+import com.android.es.roversanz.series.utils.snack
 import dagger.Component
 import kotlinx.android.synthetic.main.fragment_list_series.download_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_empty_list
@@ -41,6 +44,9 @@ class SeriesListFragment : Fragment() {
     @Inject
     lateinit var logger: Logger
 
+    @Inject
+    lateinit var resourceProvider: ResourceProvider
+
     private lateinit var seriesAdapter: SeriesAdapter
     private lateinit var downloadAdapter: DownloadSeriesAdapter
 
@@ -61,7 +67,7 @@ class SeriesListFragment : Fragment() {
         }
 
         seriesAdapter = SeriesAdapter({ callback.onSerieSelected(it) }, { viewModel.onSerieDownload(it) })
-        downloadAdapter = DownloadSeriesAdapter({ }, {})
+        downloadAdapter = DownloadSeriesAdapter(resourceProvider)
 
         series_list.apply {
             adapter = seriesAdapter
@@ -109,9 +115,13 @@ class SeriesListFragment : Fragment() {
     }
 
     private fun handleDownloadState(state: DownloadSerieState) {
-
-        if (state is DownloadSerieState.DOWNLOAD) {
-            downloadAdapter.addSerie(state.serie)
+        when (state) {
+            is DownloadSerieState.DOWNLOAD   -> downloadAdapter.addSerie(state.serieDownloaded)
+            is DownloadSerieState.DOWNLOADED -> downloadAdapter.addSerie(state.serieDownloaded)
+            is DownloadSerieState.ERROR      -> {
+                downloadAdapter.addSerie(state.serieDownloaded)
+                view?.snack(state.serieDownloaded.customError(), Snackbar.LENGTH_SHORT)
+            }
         }
 
         download_list.setVisibility(downloadAdapter.itemCount > 0)
