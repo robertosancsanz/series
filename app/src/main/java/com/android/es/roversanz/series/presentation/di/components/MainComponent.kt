@@ -14,6 +14,7 @@ import com.android.es.roversanz.series.usecases.series.GetSerieDetailUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
+import com.tonyodev.fetch2.Fetch
 import dagger.Component
 import javax.inject.Singleton
 
@@ -30,7 +31,7 @@ interface MainComponent {
 
     fun provideSerieRepository(): SerieRepository
 
-    fun provideDownloadManager(): DownloadManager
+    fun provideDownloadManager(): Fetch
 
     fun provideGetSeriesListUseCase(): GetSeriesListUseCase
 

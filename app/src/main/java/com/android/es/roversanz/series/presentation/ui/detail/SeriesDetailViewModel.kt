@@ -18,7 +18,30 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
     }
 
     fun downloadChapter() {
-        useCase.invoke(serie)
+        when {
+            state.value == SeriesDetailState.PAUSED      -> useCase.invokeResume(serie)
+            state.value == SeriesDetailState.DOWNLOADING -> useCase.invokePaused(serie)
+            else                                         -> {
+                state.postValue(SeriesDetailState.DOWNLOADING)
+                useCase.invoke(serie, { onSuccess() }, { onPaused() }, { onResumed() }, { onError(it) })
+            }
+        }
+    }
+
+    private fun onResumed() {
+        state.postValue(SeriesDetailState.DOWNLOADING)
+    }
+
+    private fun onPaused() {
+        state.postValue(SeriesDetailState.PAUSED)
+    }
+
+    private fun onSuccess() {
+        state.postValue(SeriesDetailState.DOWNLOADED)
+    }
+
+    private fun onError(message: String) {
+        state.postValue(SeriesDetailState.ERROR(message))
     }
 
     fun getState(): LiveData<SeriesDetailState> = state

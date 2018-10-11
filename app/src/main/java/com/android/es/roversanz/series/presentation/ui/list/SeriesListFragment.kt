@@ -17,6 +17,7 @@ import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.inflate
 import com.android.es.roversanz.series.utils.logger.Logger
+import com.android.es.roversanz.series.utils.setVisibility
 import com.bumptech.glide.Glide
 import dagger.Component
 import kotlinx.android.synthetic.main.fragment_list_series.series_empty_list
@@ -99,14 +100,6 @@ class SeriesListFragment : Fragment() {
         }
     }
 
-    private fun View.setVisibility(visibility: Boolean) {
-        if (visibility) {
-            this.visibility = View.VISIBLE
-        } else {
-            this.visibility = View.GONE
-        }
-    }
-
     //endregion
 
     private fun updateList(list: List<Serie>) {
@@ -121,6 +114,8 @@ class SeriesListFragment : Fragment() {
                 .inject(this)
     }
 
+    //region di
+
     @FragmentScope
     @Component(dependencies = [(MainComponent::class)])
     internal interface SeriesListFragmentComponent {
@@ -128,6 +123,7 @@ class SeriesListFragment : Fragment() {
         fun inject(fragment: SeriesListFragment)
     }
 
+    //endregion
 
     private inner class SeriesAdapter(private val listener: ((Serie) -> Unit)?) :
             RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {

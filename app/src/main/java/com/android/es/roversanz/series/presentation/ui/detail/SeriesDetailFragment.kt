@@ -14,9 +14,14 @@ import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.BUSY
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DONE
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADING
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.PAUSED
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.utils.app
+import com.android.es.roversanz.series.utils.setVisibility
 import com.bumptech.glide.Glide
 import dagger.Component
 import dagger.Module
@@ -24,6 +29,7 @@ import dagger.Provides
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_description
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_download_button
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_image
+import kotlinx.android.synthetic.main.fragment_detail_serie.serie_loading
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_subtitle
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_title
 import javax.inject.Inject
@@ -60,13 +66,7 @@ class SeriesDetailFragment : Fragment() {
             ), 123)
         }
 
-        viewModel.getState().observe(this, Observer { state ->
-            state?.let {
-                if (it is DONE) {
-                    bindItem(it.data)
-                }
-            }
-        })
+        viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
 
         serie_download_button.setOnClickListener { viewModel.downloadChapter() }
     }
@@ -78,14 +78,30 @@ class SeriesDetailFragment : Fragment() {
 
     //region handle state
 
+    private fun handleState(state: SeriesDetailState) {
+        serie_loading.setVisibility(state == BUSY || state == DOWNLOADING)
+
+        when (state) {
+            is DONE        -> bindItem(state.serie)
+            is PAUSED      -> serie_download_button.text = getString(R.string.button_resume)
+            is DOWNLOADING -> serie_download_button.text = getString(R.string.button_pause)
+            is DOWNLOADED  -> {
+                serie_download_button.isEnabled = false
+                serie_download_button.text = getString(R.string.button_already_download)
+            }
+            else           -> { //Do nothing
+            }
+        }
+    }
+
+    //endregion
+
     private fun bindItem(serie: Serie) {
         serie_title.text = serie.title
         serie_subtitle.text = serie.subtitle
         serie_description.text = serie.description
         context?.let { ctx -> Glide.with(ctx).load(serie.picture).into(serie_image) }
     }
-
-    //endregion
 
     private fun inject(app: MyApplication) {
         DaggerSeriesDetailFragment_SeriesDetailFragmentComponent.builder()
@@ -94,6 +110,8 @@ class SeriesDetailFragment : Fragment() {
                 .build()
                 .inject(this)
     }
+
+    //region di
 
     @FragmentScope
     @Component(dependencies = [(MainComponent::class)], modules = [SeriesDetailFragmentModule::class])
@@ -115,4 +133,5 @@ class SeriesDetailFragment : Fragment() {
         }
     }
 
+    //endregion
 }

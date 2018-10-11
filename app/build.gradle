@@ -108,13 +108,13 @@ dependencies {
 
     //endregion
 
-    // region Databinding
-
-    implementation localLibraries.android.databinding
-    annotationProcessor localLibraries.android.dataBindingCompiler
-    implementation localLibraries.android.dataBindingAdapter
-
-    //endregion
+//    // region Databinding
+//
+//    implementation localLibraries.android.databinding
+//    annotationProcessor localLibraries.android.dataBindingCompiler
+//    implementation localLibraries.android.dataBindingAdapter
+//
+//    //endregion
 
     // region Glide
 
@@ -122,6 +122,9 @@ dependencies {
     annotationProcessor localLibraries.img.glideCompiler
 
     //endregion
+
+    implementation "com.tonyodev.fetch2:fetch2:2.2.0-RC14"
+    implementation "com.tonyodev.fetch2okhttp:fetch2okhttp:2.2.0-RC14"
 
     implementation localLibraries.utils.leakcanary
 
