@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModel
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
+import com.android.es.roversanz.series.utils.toPercentage
 import java.io.File
 
 class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
@@ -20,12 +21,20 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
     }
 
     fun downloadChapter() = when (state.value) {
-        SeriesDetailState.PAUSED        -> useCase.invokeResume(serie)
-        SeriesDetailState.DOWNLOADING   -> useCase.invokePaused(serie)
-        is SeriesDetailState.DOWNLOADED -> state.postValue(DOWNLOADED(serie.file))
-        else                            -> {
-            state.postValue(SeriesDetailState.DOWNLOADING)
-            useCase.invoke(serie, { onSuccess(it) }, { onPaused() }, { onResumed() },{ onDeleted() }, { onError(it) })
+        SeriesDetailState.PAUSED         -> useCase.invokeResume(serie)
+        is SeriesDetailState.DOWNLOADING -> useCase.invokePaused(serie)
+        is SeriesDetailState.DOWNLOADED  -> state.postValue(DOWNLOADED(serie.file))
+        else                             -> {
+            state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
+            useCase.invoke(
+                    serie,
+                    { onProgress(it) },
+                    { onSuccess(it) },
+                    { onPaused() },
+                    { onResumed(it) },
+                    { onDeleted() },
+                    { onError(it) }
+            )
         }
     }
 
@@ -33,21 +42,25 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
         useCase.invokeCancel(serie)
     }
 
-    private fun onResumed() {
-        state.postValue(SeriesDetailState.DOWNLOADING)
+    private fun onProgress(progress: String) {
+        state.postValue(SeriesDetailState.DOWNLOADING(progress))
+    }
+
+    private fun onSuccess(file: File) {
+        serie.file = file.absolutePath
+        state.postValue(SeriesDetailState.DOWNLOADED(null))
     }
 
     private fun onPaused() {
         state.postValue(SeriesDetailState.PAUSED)
     }
 
-    private fun onDeleted() {
-        state.postValue(SeriesDetailState.INITIAL)
+    private fun onResumed(progress: String) {
+        state.postValue(SeriesDetailState.DOWNLOADING(progress))
     }
 
-    private fun onSuccess(file: File) {
-        serie.file = file.absolutePath
-        state.postValue(SeriesDetailState.DOWNLOADED(null))
+    private fun onDeleted() {
+        state.postValue(SeriesDetailState.INITIAL)
     }
 
     private fun onError(message: String) {

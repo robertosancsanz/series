@@ -1,6 +1,5 @@
 package com.android.es.roversanz.series.presentation.di.components
 
-import android.app.DownloadManager
 import android.content.Context
 import com.android.es.roversanz.series.data.SerieRepository
 import com.android.es.roversanz.series.di.module.LoggerModule

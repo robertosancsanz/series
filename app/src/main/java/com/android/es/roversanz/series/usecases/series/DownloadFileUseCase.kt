@@ -18,7 +18,6 @@ import com.tonyodev.fetch2core.DownloadBlock
 import com.tonyodev.fetch2core.Func
 import java.io.File
 
-
 class DownloadFileUseCase(
         private val logger: Logger,
         private val downloadManager: Fetch,
@@ -32,11 +31,13 @@ class DownloadFileUseCase(
 
     val map = mutableMapOf<Long, Int>()
 
+    @Suppress("ComplexMethod")
     operator fun invoke(
             serie: Serie,
+            onProgress: (String) -> Unit,
             onSuccess: (File) -> Unit,
             onPaused: () -> Unit,
-            onResumed: () -> Unit,
+            onResumed: (String) -> Unit,
             onDeleted: () -> Unit,
             onError: ((String) -> Unit)?) {
 
@@ -68,6 +69,7 @@ class DownloadFileUseCase(
 //                logger.d(TAG, "onProgress: ${download.id} -- ${download.progress} " +
 //                              "-- Speed:  $downloadedBytesPerSecond -- $etaInMilliSeconds ")
                 updateStatus(download)
+                onProgress.invoke(download.progress.toPercentage())
             }
 
             override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
@@ -82,7 +84,7 @@ class DownloadFileUseCase(
 
             override fun onResumed(download: Download) {
 //                logger.d(TAG, "onResumed: ${download.id}")
-                onResumed.invoke()
+                onResumed.invoke(download.progress.toPercentage())
             }
 
             override fun onCompleted(download: Download) {
