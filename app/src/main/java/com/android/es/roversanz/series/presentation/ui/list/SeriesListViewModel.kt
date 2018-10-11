@@ -5,12 +5,13 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase.DownloadFileUseCaseListener
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 
 class SeriesListViewModel(
         private val useCase: GetSeriesListUseCase,
-        private val useCaseDownload: DownloadFileUseCase) : ViewModel() {
+        private val useCaseDownload: DownloadFileUseCase) : ViewModel(), DownloadFileUseCaseListener {
 
     private val state = MutableLiveData<SeriesListState>().apply {
         value = SeriesListState.INITIAL
@@ -32,9 +33,7 @@ class SeriesListViewModel(
     fun onSerieDownload(serie: Serie) {
         useCaseDownload.invoke(
                 serie,
-                ::onSuccess,
-                ::onErrorDownload,
-                ::onQueued
+                this
         )
     }
 
@@ -53,15 +52,15 @@ class SeriesListViewModel(
     //endregion
 
     //region DownloadFileUseCase
-    private fun onQueued(serieDownloaded: SerieDownloaded) {
+    override fun onQueued(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
     }
 
-    private fun onSuccess(serieDownloaded: SerieDownloaded) {
+    override fun onSuccess(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.DOWNLOADED(serieDownloaded))
     }
 
-    private fun onErrorDownload(serieDownloaded: SerieDownloaded) {
+    override fun onError(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.ERROR(serieDownloaded))
     }
 

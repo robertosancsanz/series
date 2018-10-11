@@ -12,6 +12,11 @@ import com.android.es.roversanz.series.utils.provider.SchedulersProviderImpl
 import com.tonyodev.fetch2.Fetch
 import com.tonyodev.fetch2.FetchConfiguration
 import com.tonyodev.fetch2.NetworkType
+import com.tonyodev.fetch2.Status.CANCELLED
+import com.tonyodev.fetch2.Status.DELETED
+import com.tonyodev.fetch2.Status.FAILED
+import com.tonyodev.fetch2.Status.NONE
+import com.tonyodev.fetch2.Status.REMOVED
 import com.tonyodev.fetch2okhttp.OkHttpDownloader
 import dagger.Module
 import dagger.Provides
@@ -25,10 +30,10 @@ import javax.inject.Singleton
 class UseCasesModule {
 
     companion object {
-        private val CONNECT_TIMEOUT = 15000
-        private val READ_TIMEOUT = 10000
-        private val KEEP_ALIVE_TIME = 100
-        private val THREAD_COUNT = 1
+        private val CONNECT_TIMEOUT = 1500
+        private val READ_TIMEOUT = 1000
+        private val KEEP_ALIVE_TIME = 1000
+        private val THREAD_COUNT = 4
     }
 
     @Provides
@@ -60,8 +65,16 @@ class UseCasesModule {
                 .setGlobalNetworkType(NetworkType.WIFI_ONLY)
                 .setHttpDownloader(OkHttpDownloader(okHttpClient))
                 .setNamespace("SERIES")
+                .enableRetryOnNetworkGain(true)
                 .build()
-        return Fetch.getInstance(fetchConfiguration)
+        return Fetch.getInstance(fetchConfiguration).apply {
+            enableLogging(true)
+            removeAllWithStatus(DELETED)
+            removeAllWithStatus(CANCELLED)
+            removeAllWithStatus(FAILED)
+            removeAllWithStatus(NONE)
+            removeAllWithStatus(REMOVED)
+        }
     }
 
     @Provides
