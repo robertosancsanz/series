@@ -16,10 +16,10 @@ class SeriesListViewModel(
     private val state = MutableLiveData<SeriesListState>().apply {
         value = SeriesListState.INITIAL
     }
-
     private val downloadState = MutableLiveData<DownloadSerieState>().apply {
         value = DownloadSerieState.INITIAL
     }
+    private lateinit var currentSerie: Serie
 
     init {
         refresh()
@@ -31,10 +31,24 @@ class SeriesListViewModel(
     }
 
     fun onSerieDownload(serie: Serie) {
-        useCaseDownload.invoke(
-                serie,
-                this
-        )
+        currentSerie = serie
+        downloadState.postValue(DownloadSerieState.CHECKPERMISSION)
+    }
+
+    fun onSerieDownload() {
+        useCaseDownload.invoke(currentSerie, this)
+    }
+
+    fun onPause(serie: Serie) {
+        useCaseDownload.invokePaused(serie, this)
+    }
+
+    fun onResume(serie: Serie) {
+        useCaseDownload.invokeResume(serie, this)
+    }
+
+    fun onRemove(serie: Serie) {
+        useCaseDownload.invokeCancel(serie, this)
     }
 
     //region GetSeriesListUseCase
@@ -52,7 +66,20 @@ class SeriesListViewModel(
     //endregion
 
     //region DownloadFileUseCase
+
     override fun onQueued(serieDownloaded: SerieDownloaded) {
+        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
+    }
+
+    override fun onProgress(serieDownloaded: SerieDownloaded) {
+        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
+    }
+
+    override fun onPaused(serieDownloaded: SerieDownloaded) {
+        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
+    }
+
+    override fun onResumed(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
     }
 
@@ -62,6 +89,10 @@ class SeriesListViewModel(
 
     override fun onError(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.ERROR(serieDownloaded))
+    }
+
+    override fun onDeleted(serieDownloaded: SerieDownloaded) {
+        downloadState.postValue(DownloadSerieState.REMOVE(serieDownloaded))
     }
 
     //endregion

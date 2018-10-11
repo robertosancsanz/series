@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import com.android.es.roversanz.series.R
+import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 import com.android.es.roversanz.series.utils.inflate
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
@@ -14,8 +15,13 @@ import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_status
 import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_subtitle
 import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_title
 
-class DownloadSeriesAdapter(val resourceProvider: ResourceProvider)
-    : RecyclerView.Adapter<DownloadSeriesAdapter.SeriesViewHolder>() {
+class DownloadSeriesAdapter(
+        private val resourceProvider: ResourceProvider,
+        private val onPause: (Serie) -> Unit,
+        private val onResume: (Serie) -> Unit,
+        private val onRemove: (Serie) -> Unit,
+        private val onPlay: (String) -> Unit) : RecyclerView.Adapter<DownloadSeriesAdapter
+.SeriesViewHolder>() {
 
     companion object {
         private val TAG: String = "DOWNLOADED"
@@ -28,17 +34,39 @@ class DownloadSeriesAdapter(val resourceProvider: ResourceProvider)
     override fun getItemCount() = series.size
 
     override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
-        series[position].let { holder.onBind(it) }
+        series[position].let { serieToDownload ->
+            holder.apply {
+                onBind(serieToDownload)
+                itemView.setOnClickListener {
+                    when (serieToDownload.state) {
+                        Status.FAILED.name, Status.CANCELLED.name   -> onRemove.invoke(serieToDownload.serie)
+                        Status.QUEUED.name, Status.DOWNLOADING.name -> onPause.invoke(serieToDownload.serie)
+                        Status.PAUSED.name                          -> onResume.invoke(serieToDownload.serie)
+                        Status.COMPLETED.name                       -> serieToDownload.filePath?.let { path ->
+                            onPlay.invoke(path)
+                        }
+                        else                                        -> {
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun addSerie(serie: SerieDownloaded) {
-        if (!series.contains(serie)) {
-            series.add(serie)
-        } else {
+        if (series.contains(serie)) {
             series.replace(serie, serie)
+        } else {
+            Log.d(TAG, "Adding: ${serie.serie.title} on state ${serie.state}")
+            series.add(serie)
         }
-        Log.d(TAG, "Adding: ${serie.serie.title} on state ${serie.state}")
         notifyItemChanged(series.indexOf(serie))
+    }
+
+    fun removeSerie(serie: SerieDownloaded) {
+        if (series.contains(serie)) {
+            series.remove(serie)
+        }
     }
 
     inner class SeriesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -57,10 +85,11 @@ class DownloadSeriesAdapter(val resourceProvider: ResourceProvider)
             Status.FAILED.name, Status.CANCELLED.name   -> R.color.color_error
             Status.QUEUED.name, Status.DOWNLOADING.name -> R.color.color_progress
             Status.COMPLETED.name                       -> R.color.color_complete
-            else                                        -> R.color.color_progress
+            else                                        -> R.color.colorPrimaryLight
         }
 
     }
+
 }
 
 fun <E> MutableList<E>.replace(old: E, new: E): List<E> {

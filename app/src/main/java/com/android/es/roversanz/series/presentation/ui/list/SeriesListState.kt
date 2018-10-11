@@ -21,10 +21,14 @@ sealed class DownloadSerieState {
 
     object INITIAL : DownloadSerieState()
 
+    object CHECKPERMISSION : DownloadSerieState()
+
     class DOWNLOAD(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
 
     class DOWNLOADED(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
 
     class ERROR(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
+
+    class REMOVE(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
 
 }

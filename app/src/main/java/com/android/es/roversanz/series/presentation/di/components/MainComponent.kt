@@ -6,8 +6,6 @@ import com.android.es.roversanz.series.di.module.LoggerModule
 import com.android.es.roversanz.series.presentation.di.module.ApplicationModule
 import com.android.es.roversanz.series.presentation.di.module.RepositoryModule
 import com.android.es.roversanz.series.presentation.di.module.UseCasesModule
-import com.android.es.roversanz.series.presentation.di.module.ViewModelModule
-import com.android.es.roversanz.series.presentation.ui.list.SeriesListViewModelFactory
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.usecases.series.GetSerieDetailUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
@@ -19,7 +17,7 @@ import javax.inject.Singleton
 
 @Singleton
 @Component(modules = [ApplicationModule::class, LoggerModule::class, RepositoryModule::class,
-    UseCasesModule::class, ViewModelModule::class])
+    UseCasesModule::class])
 interface MainComponent {
 
     fun provideContext(): Context
@@ -37,7 +35,5 @@ interface MainComponent {
     fun provideGetSerieDetailUseCase(): GetSerieDetailUseCase
 
     fun provideDownloadFileUseCase(): DownloadFileUseCase
-
-    fun provideSeriesListViewModelFactory(): SeriesListViewModelFactory
 
 }
