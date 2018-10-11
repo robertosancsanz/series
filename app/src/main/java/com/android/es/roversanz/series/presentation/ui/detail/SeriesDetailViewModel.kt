@@ -6,8 +6,8 @@ import android.arch.lifecycle.ViewModel
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 import com.android.es.roversanz.series.utils.toPercentage
-import java.io.File
 
 class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
                             private val serie: Serie) : ViewModel() {
@@ -25,46 +25,52 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
         is SeriesDetailState.DOWNLOADING -> useCase.invokePaused(serie)
         is SeriesDetailState.DOWNLOADED  -> state.postValue(DOWNLOADED(serie.file))
         else                             -> {
-            state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
             useCase.invoke(
                     serie,
-                    { onProgress(it) },
-                    { onSuccess(it) },
-                    { onPaused() },
-                    { onResumed(it) },
-                    { onDeleted() },
-                    { onError(it) }
+                    onSuccess = { onSuccess(it) },
+                    onError = { onError(it) },
+                    onQueued = { onQueued() },
+                    onProgress = { onProgress(it) },
+                    onPaused = { onPaused() },
+                    onResumed = { onResumed(it) },
+                    onDeleted = { onDeleted() }
+
             )
         }
     }
+
 
     fun cancelDownloadChapter() {
         useCase.invokeCancel(serie)
     }
 
-    private fun onProgress(progress: String) {
-        state.postValue(SeriesDetailState.DOWNLOADING(progress))
+    private fun onProgress(serieDownloaded: SerieDownloaded) {
+        serieDownloaded.progress?.let { state.postValue(SeriesDetailState.DOWNLOADING(it)) }
     }
 
-    private fun onSuccess(file: File) {
-        serie.file = file.absolutePath
+    private fun onSuccess(serieDownloaded: SerieDownloaded) {
+        this.serie.file = serieDownloaded.filePath
         state.postValue(SeriesDetailState.DOWNLOADED(null))
+    }
+
+    private fun onQueued() {
+        state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
     }
 
     private fun onPaused() {
         state.postValue(SeriesDetailState.PAUSED)
     }
 
-    private fun onResumed(progress: String) {
-        state.postValue(SeriesDetailState.DOWNLOADING(progress))
+    private fun onResumed(serieDownloaded: SerieDownloaded) {
+        serieDownloaded.progress?.let { state.postValue(SeriesDetailState.DOWNLOADING(it)) }
     }
 
     private fun onDeleted() {
         state.postValue(SeriesDetailState.INITIAL)
     }
 
-    private fun onError(message: String) {
-        state.postValue(SeriesDetailState.ERROR(message))
+    private fun onError(serieDownloaded: SerieDownloaded) {
+        serieDownloaded.error?.let { state.postValue(SeriesDetailState.ERROR(it)) }
     }
 
     fun getState(): LiveData<SeriesDetailState> = state

@@ -1,6 +1,7 @@
 package com.android.es.roversanz.series.presentation.ui.list
 
 import com.android.es.roversanz.series.domain.Serie
+import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 
 sealed class SeriesListState {
 
@@ -20,8 +21,10 @@ sealed class DownloadSerieState {
 
     object INITIAL : DownloadSerieState()
 
-    class DOWNLOAD(val serie: Serie) : DownloadSerieState()
+    class DOWNLOAD(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
 
-    class ERROR(val message: String = "") : DownloadSerieState()
+    class DOWNLOADED(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
+
+    class ERROR(val serieDownloaded: SerieDownloaded) : DownloadSerieState()
 
 }
