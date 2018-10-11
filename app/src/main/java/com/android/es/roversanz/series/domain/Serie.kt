@@ -11,5 +11,6 @@ data class Serie(
         val description: String,
         val stars: Double,
         val picture: String,
-        val downloadUrl: String
+        val downloadUrl: String,
+        var file: String? = null
 ) : Parcelable
