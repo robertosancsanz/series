@@ -14,5 +14,12 @@ fun Activity.app() = this.application as? MyApplication
 fun Context.app() = this.applicationContext as? MyApplication
                     ?: throw ClassCastException("The Application should be ${MyApplication::class.java.simpleName}")
 
-fun ViewGroup.inflate(@LayoutRes layoutRes: Int): View
-        = LayoutInflater.from(context).inflate(layoutRes, this, false)
+fun ViewGroup.inflate(@LayoutRes layoutRes: Int): View = LayoutInflater.from(context).inflate(layoutRes, this, false)
+
+fun View.setVisibility(visibility: Boolean) {
+    if (visibility) {
+        this.visibility = View.VISIBLE
+    } else {
+        this.visibility = View.GONE
+    }
+}

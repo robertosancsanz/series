@@ -8,7 +8,13 @@ sealed class SeriesDetailState {
 
     object BUSY : SeriesDetailState()
 
-    class DONE(val data: Serie) : SeriesDetailState()
+    object DOWNLOADING: SeriesDetailState()
+
+    object PAUSED: SeriesDetailState()
+
+    object DOWNLOADED: SeriesDetailState()
+
+    class DONE(val serie: Serie) : SeriesDetailState()
 
     class ERROR(val message: String = "") : SeriesDetailState()
 
