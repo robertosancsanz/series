@@ -25,6 +25,14 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/serie_title"/>
 
+    <Button
+        android:id="@+id/serie_download_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_download"
+        app:layout_constraintRight_toRightOf="parent    "
+        app:layout_constraintBottom_toTopOf="@+id/serie_title"/>
+
     <TextView
         android:id="@+id/serie_title"
         style="@style/serie_title"

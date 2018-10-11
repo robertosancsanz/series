@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,26 +14,22 @@ import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
+import com.android.es.roversanz.series.presentation.ui.list.adapters.DownloadSeriesAdapter
+import com.android.es.roversanz.series.presentation.ui.list.adapters.SeriesAdapter
 import com.android.es.roversanz.series.utils.app
-import com.android.es.roversanz.series.utils.inflate
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.setVisibility
-import com.bumptech.glide.Glide
 import dagger.Component
+import kotlinx.android.synthetic.main.fragment_list_series.download_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_empty_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_error_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_list
 import kotlinx.android.synthetic.main.fragment_list_series.swiperefresh
-import kotlinx.android.synthetic.main.item_serie.view.serie_description
-import kotlinx.android.synthetic.main.item_serie.view.serie_image
-import kotlinx.android.synthetic.main.item_serie.view.serie_title
 import javax.inject.Inject
 
 class SeriesListFragment : Fragment() {
 
     companion object {
-
-        private val TAG: String = SeriesListFragment::class.java.simpleName
         private const val NUM_ITEMS: Int = 2
 
         fun getInstance() = SeriesListFragment()
@@ -46,13 +42,14 @@ class SeriesListFragment : Fragment() {
     lateinit var logger: Logger
 
     private lateinit var seriesAdapter: SeriesAdapter
+    private lateinit var downloadAdapter: DownloadSeriesAdapter
+
     private lateinit var callback: SeriesListFragmentListener
     private val viewModel: SeriesListViewModel by lazy {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View
-            = inflater.inflate(R.layout.fragment_list_series, null)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View = inflater.inflate(R.layout.fragment_list_series, null)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -63,18 +60,28 @@ class SeriesListFragment : Fragment() {
                     ?: throw ClassCastException("${it::class.java.simpleName} must implements ListFragmentListener")
         }
 
-        seriesAdapter = SeriesAdapter {
-            callback.onSerieSelected(it)
-        }
+        seriesAdapter = SeriesAdapter({ callback.onSerieSelected(it) }, { viewModel.onSerieDownload(it) })
+        downloadAdapter = DownloadSeriesAdapter({ }, {})
 
         series_list.apply {
             adapter = seriesAdapter
             layoutManager = GridLayoutManager(context, NUM_ITEMS)
         }
 
-        viewModel.getState().observe(this, Observer { state ->
-            state?.let { handleState(it) }
-        })
+        download_list.apply {
+            adapter = downloadAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+
+
+        viewModel.apply {
+            getState().observe(this@SeriesListFragment, Observer { state ->
+                state?.let { handleState(it) }
+            })
+            getDownloadState().observe(this@SeriesListFragment, Observer { state ->
+                state?.let { handleDownloadState(it) }
+            })
+        }
 
         swiperefresh.setOnRefreshListener {
             viewModel.refresh()
@@ -98,6 +105,16 @@ class SeriesListFragment : Fragment() {
         if (state is SeriesListState.DONE) {
             updateList(state.data)
         }
+
+    }
+
+    private fun handleDownloadState(state: DownloadSerieState) {
+
+        if (state is DownloadSerieState.DOWNLOAD) {
+            downloadAdapter.addSerie(state.serie)
+        }
+
+        download_list.setVisibility(downloadAdapter.itemCount > 0)
     }
 
     //endregion
@@ -124,41 +141,6 @@ class SeriesListFragment : Fragment() {
     }
 
     //endregion
-
-    private inner class SeriesAdapter(private val listener: ((Serie) -> Unit)?) :
-            RecyclerView.Adapter<SeriesAdapter.SeriesViewHolder>() {
-
-        private var series: List<Serie> = listOf()
-
-        override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder = SeriesViewHolder(parent.inflate(R.layout.item_serie))
-
-        override fun getItemCount() = series.size
-
-        override fun onBindViewHolder(holder: SeriesViewHolder, position: Int) {
-            series[position].let { serie ->
-                holder.onBind(serie)
-                holder.itemView.setOnClickListener {
-                    listener?.invoke(serie)
-                }
-            }
-        }
-
-        fun updateSeries(list: List<Serie>) {
-            series = list
-            notifyDataSetChanged()
-        }
-
-        private inner class SeriesViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-
-            fun onBind(serie: Serie) {
-                itemView.serie_title.text = serie.title
-                itemView.serie_description.text = serie.subtitle
-                Glide.with(itemView.context).load(serie.picture).into(itemView.serie_image)
-            }
-
-        }
-
-    }
 
     interface SeriesListFragmentListener {
         fun onSerieSelected(serie: Serie)

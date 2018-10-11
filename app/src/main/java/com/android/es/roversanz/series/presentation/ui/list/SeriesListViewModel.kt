@@ -12,15 +12,21 @@ class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel
         value = SeriesListState.INITIAL
     }
 
+    private val downloadState = MutableLiveData<DownloadSerieState>().apply {
+        value = DownloadSerieState.INITIAL
+    }
+
     init {
         refresh()
     }
 
-    fun getState(): LiveData<SeriesListState> = state
-
     fun refresh() {
         state.postValue(SeriesListState.BUSY)
         useCase.invoke({ onSuccess(it) }, { onError(it) })
+    }
+
+    fun onSerieDownload(serie: Serie) {
+        downloadState.postValue(DownloadSerieState.DOWNLOAD(serie))
     }
 
     private fun onSuccess(list: List<Serie>) = if (list.isEmpty()) {
@@ -32,5 +38,9 @@ class SeriesListViewModel(private val useCase: GetSeriesListUseCase) : ViewModel
     private fun onError(message: String) {
         state.postValue(SeriesListState.ERROR(message))
     }
+
+    fun getState(): LiveData<SeriesListState> = state
+
+    fun getDownloadState(): LiveData<DownloadSerieState> = downloadState
 
 }
