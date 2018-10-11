@@ -18,6 +18,7 @@ import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.BUSY
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.CHECKPERMISSION
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DONE
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADING
@@ -26,6 +27,10 @@ import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.PAUSED
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.utils.app
+import com.android.es.roversanz.series.utils.permission.Permission
+import com.android.es.roversanz.series.utils.permission.PermissionHandler
+import com.android.es.roversanz.series.utils.permission.hasPermission
+import com.android.es.roversanz.series.utils.permission.onRequestPermission
 import com.android.es.roversanz.series.utils.setVisibility
 import com.android.es.roversanz.series.utils.snack
 import com.bumptech.glide.Glide
@@ -68,9 +73,7 @@ class SeriesDetailFragment : Fragment() {
 
         activity?.let {
             inject(it.app())
-            ActivityCompat.requestPermissions(it, arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ), 123)
+            ActivityCompat.requestPermissions(it, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 123)
         }
 
         viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
@@ -85,6 +88,30 @@ class SeriesDetailFragment : Fragment() {
         viewModel.getState().removeObservers(this)
     }
 
+
+    //region Permission
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        val perm = PermissionHandler.getPermissionFromRequestCode(requestCode)
+        perm?.let {
+            when {
+                PermissionHandler.isPermissionGranted(it, requestCode, grantResults) -> viewModel.downloadChapter()
+                PermissionHandler.isPermissionDenied(it, requestCode, grantResults)  -> onRequestPermission(it)
+                else                                                                 -> onRequestPermission(it)
+            }
+        }
+    }
+
+    private fun checkPermission() {
+        if (context.hasPermission(Permission.STORAGE)) {
+            viewModel.downloadChapter()
+        } else {
+            onRequestPermission(Permission.STORAGE)
+        }
+    }
+
+    //endregion
+
     //region handle state
 
     private fun handleState(state: SeriesDetailState) {
@@ -92,24 +119,20 @@ class SeriesDetailFragment : Fragment() {
         serie_cancel_button.setVisibility(state == PAUSED)
 
         when (state) {
-            is INITIAL     -> serie_download_button.text = getString(R.string.button_download)
-            is ERROR       -> {
+            INITIAL         -> serie_download_button.text = getString(R.string.button_download)
+            CHECKPERMISSION -> checkPermission()
+            is ERROR        -> {
                 view?.snack(state.message, Snackbar.LENGTH_SHORT)
                 serie_download_button.text = getString(R.string.button_download)
             }
-            is DONE        -> bindItem(state.serie)
-            is PAUSED      -> serie_download_button.text = getString(R.string.button_resume)
-            is DOWNLOADING -> serie_download_button.text = "${state.progress} ${getString(R.string.button_pause)}"
-            is DOWNLOADED  -> {
+            is DONE         -> bindItem(state.serie)
+            PAUSED          -> serie_download_button.text = getString(R.string.button_resume)
+            is DOWNLOADING  -> serie_download_button.text = "${state.progress} ${getString(R.string.button_pause)}"
+            is DOWNLOADED   -> {
                 serie_download_button.text = getString(R.string.button_already_download)
-                state.filePath?.let {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it)).apply {
-                        setDataAndType(Uri.parse(it), "video/mp4")
-                    }
-                    activity?.startActivity(intent)
-                }
+                state.filePath?.let { playSerie(it) }
             }
-            else           -> { //Do nothing
+            else            -> { //Do nothing
             }
         }
     }
@@ -121,6 +144,13 @@ class SeriesDetailFragment : Fragment() {
         serie_subtitle.text = serie.subtitle
         serie_description.text = serie.description
         context?.let { ctx -> Glide.with(ctx).load(serie.picture).into(serie_image) }
+    }
+
+    private fun playSerie(path: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(path)).apply {
+            setDataAndType(Uri.parse(path), "video/mp4")
+        }
+        activity?.startActivity(intent)
     }
 
     private fun inject(app: MyApplication) {

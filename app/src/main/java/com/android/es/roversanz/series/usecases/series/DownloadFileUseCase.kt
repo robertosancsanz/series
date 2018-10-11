@@ -90,9 +90,11 @@ class DownloadFileUseCase(
     override fun onCompleted(download: Download) {
         updateStatus(download)
         seriesMap[download.request.identifier]?.let { serie ->
-            val filePath = Environment.getExternalStoragePublicDirectory(PATH).absolutePath + "Series/${serie.title}.mp4"
+            val file = getFile(serie)
+            logger.d(TAG, "onCompleted: ${download.id} -- ${serie.title}")
             callbacks.forEach { callback ->
-                callback.onSuccess(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(), filePath = filePath))
+                callback.onSuccess(SerieDownloaded(serie = serie, state = download.status.name,
+                                                   progress = download.progress.toPercentage(), filePath = file.absolutePath))
             }
         }
     }
@@ -154,9 +156,7 @@ class DownloadFileUseCase(
         }
         seriesMap[request.identifier] = serieToDownload
 
-        if (!callbacks.contains(callback)) {
-            this.callbacks.add(callback)
-        }
+        addToCallbacks(callback)
 
         downloadManager.enqueue(request, Func {
             logger.d(TAG, "Request Enqueued ${it.id} - ${it.identifier}")
@@ -166,25 +166,38 @@ class DownloadFileUseCase(
 
     }
 
-    fun invokePaused(serie: Serie) {
+    fun invokePaused(serie: Serie, callback: DownloadFileUseCaseListener? = null) {
+        callback?.let { addToCallbacks(it) }
+
         downloadManager.getDownloadsByRequestIdentifier(serie.id, Func { downloadList ->
             logger.d(TAG, "invokePaused: ${downloadList.map { it.id }}")
             downloadManager.pause(downloadList.map { it.id })
         })
     }
 
-    fun invokeResume(serie: Serie) {
+    fun invokeResume(serie: Serie, callback: DownloadFileUseCaseListener? = null) {
+        callback?.let { addToCallbacks(it) }
+
         downloadManager.getDownloadsByRequestIdentifier(serie.id, Func { downloadList ->
             logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
             downloadManager.resume(downloadList.map { it.id })
         })
     }
 
-    fun invokeCancel(serie: Serie) {
+    fun invokeCancel(serie: Serie, callback: DownloadFileUseCaseListener? = null) {
+        callback?.let { addToCallbacks(it) }
+
         downloadManager.getDownloadsByRequestIdentifier(serie.id, Func { downloadList ->
             logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
             downloadManager.delete(downloadList.map { it.id })
         })
+    }
+
+    private fun addToCallbacks(callback: DownloadFileUseCaseListener) {
+        if (!callbacks.contains(callback)) {
+            logger.d(TAG, "Adding Callback: $callback}")
+            callbacks.add(callback)
+        }
     }
 
     private fun updateStatus(download: Download) {
@@ -203,12 +216,12 @@ class DownloadFileUseCase(
     }
 
     interface DownloadFileUseCaseListener {
-        fun onSuccess(serie: SerieDownloaded) = Unit
-        fun onError(serie: SerieDownloaded) = Unit
-        fun onQueued(serie: SerieDownloaded) = Unit
-        fun onProgress(serie: SerieDownloaded) = Unit
-        fun onPaused(serie: SerieDownloaded) = Unit
-        fun onResumed(serie: SerieDownloaded) = Unit
-        fun onDeleted(serie: SerieDownloaded) = Unit
+        fun onSuccess(serieDownloaded: SerieDownloaded) = Unit
+        fun onError(serieDownloaded: SerieDownloaded) = Unit
+        fun onQueued(serieDownloaded: SerieDownloaded) = Unit
+        fun onProgress(serieDownloaded: SerieDownloaded) = Unit
+        fun onPaused(serieDownloaded: SerieDownloaded) = Unit
+        fun onResumed(serieDownloaded: SerieDownloaded) = Unit
+        fun onDeleted(serieDownloaded: SerieDownloaded) = Unit
     }
 }
