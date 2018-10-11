@@ -25,8 +25,12 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
         is SeriesDetailState.DOWNLOADED -> state.postValue(DOWNLOADED(serie.file))
         else                            -> {
             state.postValue(SeriesDetailState.DOWNLOADING)
-            useCase.invoke(serie, { onSuccess(it) }, { onPaused() }, { onResumed() }, { onError(it) })
+            useCase.invoke(serie, { onSuccess(it) }, { onPaused() }, { onResumed() },{ onDeleted() }, { onError(it) })
         }
+    }
+
+    fun cancelDownloadChapter() {
+        useCase.invokeCancel(serie)
     }
 
     private fun onResumed() {
@@ -35,6 +39,10 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
 
     private fun onPaused() {
         state.postValue(SeriesDetailState.PAUSED)
+    }
+
+    private fun onDeleted() {
+        state.postValue(SeriesDetailState.INITIAL)
     }
 
     private fun onSuccess(file: File) {

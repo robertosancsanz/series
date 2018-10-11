@@ -37,6 +37,7 @@ class DownloadFileUseCase(
             onSuccess: (File) -> Unit,
             onPaused: () -> Unit,
             onResumed: () -> Unit,
+            onDeleted: () -> Unit,
             onError: ((String) -> Unit)?) {
 
         val storageDir = File(Environment.getExternalStoragePublicDirectory(PATH), "Series/")
@@ -107,6 +108,7 @@ class DownloadFileUseCase(
                 logger.d(TAG, "onDeleted: ${download.id}")
                 file.delete()
                 downloadManager.removeListener(this)
+                onDeleted.invoke()
             }
 
             override fun onError(download: Download, error: Error, throwable: Throwable?) {
@@ -126,7 +128,7 @@ class DownloadFileUseCase(
             downloadOnEnqueue = true
             priority = NORMAL
             networkType = WIFI_ONLY
-            this.extras
+
         }
 
         downloadManager.addListener(listener)
@@ -144,6 +146,10 @@ class DownloadFileUseCase(
 
     fun invokeResume(serie: Serie) {
         map[serie.id]?.let { downloadManager.resume(it) }
+    }
+
+    fun invokeCancel(serie: Serie) {
+        map[serie.id]?.let { downloadManager.delete(it) }
     }
 
     private fun updateStatus(download: Download) {

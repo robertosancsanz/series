@@ -52,6 +52,17 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/serie_subtitle"/>
 
+        <Button
+            android:id="@+id/serie_cancel_button"
+            style="@style/serie_subtitle"
+            android:layout_width="@dimen/padding_zero_size"
+            android:layout_height="wrap_content"
+            android:text="@string/button_cancel"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/serie_download_button"/>
+
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
@@ -59,7 +70,7 @@
             android:layout_marginBottom="@dimen/padding_medium_size"
             android:layout_marginTop="@dimen/padding_medium_size"
             android:background="@color/colorDivider"
-            app:layout_constraintTop_toBottomOf="@+id/serie_download_button"/>
+            app:layout_constraintTop_toBottomOf="@+id/serie_cancel_button"/>
 
         <TextView
             android:id="@+id/serie_description"
