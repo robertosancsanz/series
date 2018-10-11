@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -20,11 +21,13 @@ import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DONE
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADING
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.ERROR
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.INITIAL
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.PAUSED
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.setVisibility
+import com.android.es.roversanz.series.utils.snack
 import com.bumptech.glide.Glide
 import dagger.Component
 import dagger.Module
@@ -86,13 +89,17 @@ class SeriesDetailFragment : Fragment() {
 
     private fun handleState(state: SeriesDetailState) {
         serie_loading.setVisibility(state == BUSY || state is DOWNLOADING)
-        serie_cancel_button.setVisibility(state == PAUSED )
+        serie_cancel_button.setVisibility(state == PAUSED)
 
         when (state) {
             is INITIAL     -> serie_download_button.text = getString(R.string.button_download)
+            is ERROR       -> {
+                view?.snack(state.message, Snackbar.LENGTH_SHORT)
+                serie_download_button.text = getString(R.string.button_download)
+            }
             is DONE        -> bindItem(state.serie)
             is PAUSED      -> serie_download_button.text = getString(R.string.button_resume)
-            is DOWNLOADING -> serie_download_button.text = state.progress + " " + getString(R.string.button_pause)
+            is DOWNLOADING -> serie_download_button.text = "${state.progress} ${getString(R.string.button_pause)}"
             is DOWNLOADED  -> {
                 serie_download_button.text = getString(R.string.button_already_download)
                 state.filePath?.let {
