@@ -8,7 +8,7 @@ sealed class SeriesDetailState {
 
     object BUSY : SeriesDetailState()
 
-    object DOWNLOADING : SeriesDetailState()
+    class DOWNLOADING(val progress: String) : SeriesDetailState()
 
     object PAUSED : SeriesDetailState()
 

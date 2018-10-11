@@ -21,7 +21,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-
 @Module
 class UseCasesModule {
 
@@ -52,11 +51,6 @@ class UseCasesModule {
             level = HttpLoggingInterceptor.Level.BASIC
         })
     }.build()
-
-//    @Provides
-//    @Singleton
-//    @Suppress("UnsafeCast")
-//    internal fun provideDownloadManager(ctx: Context): DownloadManager = ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
     @Provides
     @Singleton

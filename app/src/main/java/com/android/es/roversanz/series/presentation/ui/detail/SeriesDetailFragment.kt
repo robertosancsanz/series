@@ -38,7 +38,6 @@ import kotlinx.android.synthetic.main.fragment_detail_serie.serie_subtitle
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_title
 import javax.inject.Inject
 
-
 class SeriesDetailFragment : Fragment() {
 
     companion object {
@@ -86,14 +85,14 @@ class SeriesDetailFragment : Fragment() {
     //region handle state
 
     private fun handleState(state: SeriesDetailState) {
-        serie_loading.setVisibility(state == BUSY || state == DOWNLOADING)
-        serie_cancel_button.setVisibility(state == PAUSED || state is DOWNLOADED)
+        serie_loading.setVisibility(state == BUSY || state is DOWNLOADING)
+        serie_cancel_button.setVisibility(state == PAUSED )
 
         when (state) {
             is INITIAL     -> serie_download_button.text = getString(R.string.button_download)
             is DONE        -> bindItem(state.serie)
             is PAUSED      -> serie_download_button.text = getString(R.string.button_resume)
-            is DOWNLOADING -> serie_download_button.text = getString(R.string.button_pause)
+            is DOWNLOADING -> serie_download_button.text = state.progress + " " + getString(R.string.button_pause)
             is DOWNLOADED  -> {
                 serie_download_button.text = getString(R.string.button_already_download)
                 state.filePath?.let {
