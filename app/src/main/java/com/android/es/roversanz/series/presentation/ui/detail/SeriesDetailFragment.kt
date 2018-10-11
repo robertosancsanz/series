@@ -20,6 +20,7 @@ import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DONE
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADING
+import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.INITIAL
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.PAUSED
 import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.utils.app
@@ -28,6 +29,7 @@ import com.bumptech.glide.Glide
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import kotlinx.android.synthetic.main.fragment_detail_serie.serie_cancel_button
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_description
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_download_button
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_image
@@ -72,6 +74,8 @@ class SeriesDetailFragment : Fragment() {
         viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
 
         serie_download_button.setOnClickListener { viewModel.downloadChapter() }
+
+        serie_cancel_button.setOnClickListener { viewModel.cancelDownloadChapter() }
     }
 
     override fun onDestroyView() {
@@ -83,8 +87,10 @@ class SeriesDetailFragment : Fragment() {
 
     private fun handleState(state: SeriesDetailState) {
         serie_loading.setVisibility(state == BUSY || state == DOWNLOADING)
+        serie_cancel_button.setVisibility(state == PAUSED || state is DOWNLOADED)
 
         when (state) {
+            is INITIAL     -> serie_download_button.text = getString(R.string.button_download)
             is DONE        -> bindItem(state.serie)
             is PAUSED      -> serie_download_button.text = getString(R.string.button_resume)
             is DOWNLOADING -> serie_download_button.text = getString(R.string.button_pause)

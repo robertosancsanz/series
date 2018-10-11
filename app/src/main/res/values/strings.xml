@@ -9,4 +9,6 @@
     <string name="button_already_download">Already downloaded</string>
     <string name="button_pause">Pause download</string>
     <string name="button_resume">Resume download</string>
+    <string name="button_cancel">Cancel</string>
+
 </resources>
