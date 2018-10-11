@@ -34,14 +34,7 @@ class MainActivity : AppCompatActivity(), SeriesListFragmentListener {
         inject(app())
 
         viewModel.getState().observe(this, Observer { state ->
-            when (state) {
-                MainState.INITIAL   -> {
-                    // Do nothing
-                }
-                MainState.LIST      -> loadFragment(SeriesListFragment.getInstance(), SeriesListFragment::class.java.simpleName, false)
-                is MainState.DETAIL -> loadFragment(SeriesDetailFragment.getInstance(state.serie), SeriesDetailFragment::class.java.simpleName, true)
-                else                -> Log.d(TAG, "Something is wrong")
-            }
+            state?.let { handleState(it) }
         })
     }
 
@@ -50,9 +43,24 @@ class MainActivity : AppCompatActivity(), SeriesListFragmentListener {
         viewModel.getState().removeObservers(this)
     }
 
+    private fun handleState(state: MainState) {
+        when (state) {
+            MainState.INITIAL   -> {
+                // Do nothing
+            }
+            MainState.LIST      -> loadFragment(SeriesListFragment.getInstance(), SeriesListFragment::class.java.simpleName, false)
+            is MainState.DETAIL -> loadFragment(SeriesDetailFragment.getInstance(state.serie), SeriesDetailFragment::class.java.simpleName, true)
+            else                -> Log.d(TAG, "Something is wrong")
+        }
+    }
+
+    //region SeriesListFragmentListener
+
     override fun onSerieSelected(serie: Serie) {
         viewModel.onSerieSelected(serie)
     }
+
+    //endregion
 
     private fun loadFragment(fragment: Fragment, tag: String, addToBackStack: Boolean) {
         val fragmentFounded = supportFragmentManager.findFragmentByTag(tag)

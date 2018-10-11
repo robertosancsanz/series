@@ -15,3 +15,13 @@ sealed class SeriesListState {
     class ERROR(val message: String = "") : SeriesListState()
 
 }
+
+sealed class DownloadSerieState {
+
+    object INITIAL : DownloadSerieState()
+
+    class DOWNLOAD(val serie: Serie) : DownloadSerieState()
+
+    class ERROR(val message: String = "") : DownloadSerieState()
+
+}
