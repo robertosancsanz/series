@@ -8,11 +8,11 @@ sealed class SeriesDetailState {
 
     object BUSY : SeriesDetailState()
 
-    object DOWNLOADING: SeriesDetailState()
+    object DOWNLOADING : SeriesDetailState()
 
-    object PAUSED: SeriesDetailState()
+    object PAUSED : SeriesDetailState()
 
-    object DOWNLOADED: SeriesDetailState()
+    class DOWNLOADED(val filePath: String?) : SeriesDetailState()
 
     class DONE(val serie: Serie) : SeriesDetailState()
 

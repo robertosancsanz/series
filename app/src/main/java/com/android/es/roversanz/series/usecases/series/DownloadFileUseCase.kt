@@ -34,7 +34,7 @@ class DownloadFileUseCase(
 
     operator fun invoke(
             serie: Serie,
-            onSuccess: () -> Unit,
+            onSuccess: (File) -> Unit,
             onPaused: () -> Unit,
             onResumed: () -> Unit,
             onError: ((String) -> Unit)?) {
@@ -88,26 +88,30 @@ class DownloadFileUseCase(
 //                logger.d(TAG, "onCompleted: ${download.id} -- ${download.downloaded}")
                 updateStatus(download)
                 downloadManager.removeListener(this)
-                onSuccess.invoke()
+                onSuccess.invoke(file)
             }
 
             override fun onCancelled(download: Download) {
 //                logger.d(TAG, "onCancelled: ${download.id}")
+                file.delete()
                 downloadManager.removeListener(this)
             }
 
             override fun onRemoved(download: Download) {
 //                logger.d(TAG, "onRemoved: ${download.id}")
+                file.delete()
                 downloadManager.removeListener(this)
             }
 
             override fun onDeleted(download: Download) {
                 logger.d(TAG, "onDeleted: ${download.id}")
+                file.delete()
                 downloadManager.removeListener(this)
             }
 
             override fun onError(download: Download, error: Error, throwable: Throwable?) {
                 logger.d(TAG, "onError: ${download.id}")
+                file.delete()
                 downloadManager.removeListener(this)
                 onError?.invoke(error.throwable?.message
                                 ?: resourceProvider.getString(R.string.error_general))

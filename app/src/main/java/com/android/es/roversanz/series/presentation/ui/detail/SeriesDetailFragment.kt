@@ -3,6 +3,8 @@ package com.android.es.roversanz.series.presentation.ui.detail
 import android.Manifest
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
@@ -33,6 +35,7 @@ import kotlinx.android.synthetic.main.fragment_detail_serie.serie_loading
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_subtitle
 import kotlinx.android.synthetic.main.fragment_detail_serie.serie_title
 import javax.inject.Inject
+
 
 class SeriesDetailFragment : Fragment() {
 
@@ -86,8 +89,13 @@ class SeriesDetailFragment : Fragment() {
             is PAUSED      -> serie_download_button.text = getString(R.string.button_resume)
             is DOWNLOADING -> serie_download_button.text = getString(R.string.button_pause)
             is DOWNLOADED  -> {
-                serie_download_button.isEnabled = false
                 serie_download_button.text = getString(R.string.button_already_download)
+                state.filePath?.let {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it)).apply {
+                        setDataAndType(Uri.parse(it), "video/mp4")
+                    }
+                    activity?.startActivity(intent)
+                }
             }
             else           -> { //Do nothing
             }
