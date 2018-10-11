@@ -1,12 +1,14 @@
 package com.android.es.roversanz.series.presentation.ui.list.adapters
 
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import com.android.es.roversanz.series.R
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 import com.android.es.roversanz.series.utils.inflate
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
+import com.tonyodev.fetch2.Status
 import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_percentage
 import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_status
 import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_subtitle
@@ -14,6 +16,10 @@ import kotlinx.android.synthetic.main.item_serie_downloading.view.serie_title
 
 class DownloadSeriesAdapter(val resourceProvider: ResourceProvider)
     : RecyclerView.Adapter<DownloadSeriesAdapter.SeriesViewHolder>() {
+
+    companion object {
+        private val TAG: String = "DOWNLOADED"
+    }
 
     private var series: MutableList<SerieDownloaded> = mutableListOf()
 
@@ -31,7 +37,7 @@ class DownloadSeriesAdapter(val resourceProvider: ResourceProvider)
         } else {
             series.replace(serie, serie)
         }
-
+        Log.d(TAG, "Adding: ${serie.serie.title} on state ${serie.state}")
         notifyItemChanged(series.indexOf(serie))
     }
 
@@ -48,10 +54,10 @@ class DownloadSeriesAdapter(val resourceProvider: ResourceProvider)
 
         //TODO: Replace Ugly strings
         private fun getBackgroundColor(state: String): Int = when (state) {
-            "FAILED", "CANCELLED"   -> R.color.color_error
-            "QUEUED", "DOWNLOADING" -> R.color.color_progress
-            "COMPLETED"             -> R.color.color_complete
-            else                    -> R.color.color_progress
+            Status.FAILED.name, Status.CANCELLED.name   -> R.color.color_error
+            Status.QUEUED.name, Status.DOWNLOADING.name -> R.color.color_progress
+            Status.COMPLETED.name                       -> R.color.color_complete
+            else                                        -> R.color.color_progress
         }
 
     }

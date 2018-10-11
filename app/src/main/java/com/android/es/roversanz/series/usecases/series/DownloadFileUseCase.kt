@@ -21,124 +21,145 @@ import java.io.File
 class DownloadFileUseCase(
         private val logger: Logger,
         private val downloadManager: Fetch,
-        private val resourceProvider: ResourceProvider) : UseCase {
+        private val resourceProvider: ResourceProvider) : UseCase, FetchListener {
 
     companion object {
-        private val TAG: String = "DOWNLOADED"
+        private const val TAG: String = "DOWNLOADED"
         private val PATH: String = Environment.DIRECTORY_DOWNLOADS
+        private const val DIRECTORY = "Series/"
     }
 
+    private val seriesMap = mutableMapOf<Long, Serie>()
+    private var callbacks = mutableListOf<DownloadFileUseCase.DownloadFileUseCaseListener>()
 
-    val map = mutableMapOf<Long, Int>()
+    init {
+        downloadManager.addListener(this)
+    }
 
-    @Suppress("ComplexMethod")
-    operator fun invoke(
-            serie: Serie,
-            onSuccess: (SerieDownloaded) -> Unit,
-            onError: ((SerieDownloaded) -> Unit)? = null,
-            onQueued: ((SerieDownloaded) -> Unit)? = null,
-            onProgress: ((SerieDownloaded) -> Unit)? = null,
-            onPaused: ((SerieDownloaded) -> Unit)? = null,
-            onResumed: ((SerieDownloaded) -> Unit)? = null,
-            onDeleted: ((SerieDownloaded) -> Unit)? = null) {
+    //region listener
 
-        val storageDir = File(Environment.getExternalStoragePublicDirectory(PATH), "Series/")
-                .apply {
-                    logger.d(TAG, "Creating directory: " + mkdirs())
-                }
-        val file = File.createTempFile(serie.title, ".mp4", storageDir)
+    override fun onAdded(download: Download) {
+        updateStatus(download)
+    }
 
-        val listener = object : FetchListener {
-
-            override fun onAdded(download: Download) {
-//                logger.d(TAG, "onAdded: ${download.id}")
-                updateStatus(download)
+    override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
+        updateStatus(download)
+        seriesMap[download.request.identifier]?.let { serie ->
+            callbacks.forEach { callback ->
+                callback.onQueued(SerieDownloaded(serie = serie, state = download.status.name,
+                                                  progress = download.progress.toPercentage()))
             }
-
-            override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
-//                logger.d(TAG, "onQueued: ${download.id} $waitingOnNetwork")
-                updateStatus(download)
-                onQueued?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
-            }
-
-            override fun onStarted(download: Download, downloadBlocks: List<DownloadBlock>, totalBlocks: Int) {
-//                logger.d(TAG, "onStarted: ${download.id} -- $totalBlocks")
-                updateStatus(download)
-                map[serie.id] = download.id
-            }
-
-            override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
-//                logger.d(TAG, "onProgress: ${download.id} -- ${download.progress} " +
-//                              "-- Speed:  $downloadedBytesPerSecond -- $etaInMilliSeconds ")
-                updateStatus(download)
-                onProgress?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
-            }
-
-            override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
-//                logger.d(TAG, "onDownloadBlockUpdated: ${download.id} -- ${downloadBlock
-//                        .downloadedBytes}")
-            }
-
-            override fun onPaused(download: Download) {
-//                logger.d(TAG, "onPaused: ${download.id}")
-                onPaused?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
-            }
-
-            override fun onResumed(download: Download) {
-//                logger.d(TAG, "onResumed: ${download.id}")
-                onResumed?.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
-            }
-
-            override fun onCompleted(download: Download) {
-//                logger.d(TAG, "onCompleted: ${download.id} -- ${download.downloaded}")
-                updateStatus(download)
-                downloadManager.removeListener(this)
-                onSuccess.invoke(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(), filePath = file.absolutePath))
-            }
-
-            override fun onCancelled(download: Download) {
-//                logger.d(TAG, "onCancelled: ${download.id}")
-                file.delete()
-                downloadManager.removeListener(this)
-            }
-
-            override fun onRemoved(download: Download) {
-//                logger.d(TAG, "onRemoved: ${download.id}")
-                file.delete()
-                downloadManager.removeListener(this)
-            }
-
-            override fun onDeleted(download: Download) {
-                logger.d(TAG, "onDeleted: ${download.id}")
-                file.delete()
-                downloadManager.removeListener(this)
-                onDeleted?.invoke(SerieDownloaded(serie = serie, state = download.status.name))
-            }
-
-            override fun onError(download: Download, error: Error, throwable: Throwable?) {
-                logger.d(TAG, "onError: ${download.id}")
-                file.delete()
-                downloadManager.removeListener(this)
-                val message = error.throwable?.message
-                              ?: resourceProvider.getString(R.string.error_general)
-                onError?.invoke(SerieDownloaded(serie = serie, state = download.status.name, error = message, progress = download.progress.toPercentage()))
-            }
-
-            override fun onWaitingNetwork(download: Download) {
-                logger.d(TAG, "onWaitingNetwork: ${download.id}")
-            }
-
         }
-        val request = Request(serie.downloadUrl, file.absolutePath).apply {
+    }
+
+    override fun onStarted(download: Download, downloadBlocks: List<DownloadBlock>, totalBlocks: Int) {
+        updateStatus(download)
+    }
+
+    override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
+        updateStatus(download)
+        seriesMap[download.request.identifier]?.let { serie ->
+            callbacks.forEach { callback ->
+                callback.onProgress(SerieDownloaded(serie = serie, state = download.status
+                        .name, progress = download.progress.toPercentage()))
+            }
+        }
+    }
+
+    override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
+
+    }
+
+    override fun onPaused(download: Download) {
+        seriesMap[download.request.identifier]?.let { serie ->
+            callbacks.forEach { callback ->
+                callback.onPaused(SerieDownloaded(serie = serie, state = download.status
+                        .name, progress = download.progress.toPercentage()))
+            }
+        }
+    }
+
+    override fun onResumed(download: Download) {
+        seriesMap[download.request.identifier]?.let { serie ->
+            callbacks.forEach { callback ->
+                callback.onResumed(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
+            }
+        }
+    }
+
+    override fun onCompleted(download: Download) {
+        updateStatus(download)
+        seriesMap[download.request.identifier]?.let { serie ->
+            val filePath = Environment.getExternalStoragePublicDirectory(PATH).absolutePath + "Series/${serie.title}.mp4"
+            callbacks.forEach { callback ->
+                callback.onSuccess(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(), filePath = filePath))
+            }
+        }
+    }
+
+    override fun onCancelled(download: Download) {
+        logger.d(TAG, "onCancelled: ${download.id}")
+//                file.delete()
+        downloadManager.remove(download.id)
+    }
+
+    override fun onRemoved(download: Download) {
+        logger.d(TAG, "onRemoved: ${download.id}")
+//                file.delete()
+    }
+
+    override fun onDeleted(download: Download) {
+        logger.d(TAG, "onDeleted: ${download.id}")
+        downloadManager.remove(download.id)
+        seriesMap[download.request.identifier]?.let { serie ->
+            removeFile(serie)
+            callbacks.forEach { callback ->
+                callback.onDeleted(SerieDownloaded(serie = serie, state = download.status
+                        .name))
+            }
+        }
+    }
+
+    override fun onError(download: Download, error: Error, throwable: Throwable?) {
+        //Maybe we don´t want to remove this download, for future tries
+        downloadManager.remove(download.id)
+        seriesMap[download.request.identifier]?.let { serie ->
+            removeFile(serie)
+            val message = error.throwable?.message
+                          ?: resourceProvider.getString(R.string.error_general)
+            logger.d(TAG, "onError: ${download.id} -- ${serie.title}")
+            callbacks.forEach { callback ->
+                callback.onError(SerieDownloaded(serie = serie, state = download.status.name, error = message, progress = download.progress.toPercentage()))
+            }
+        }
+    }
+
+    override fun onWaitingNetwork(download: Download) {
+        logger.d(TAG, "onWaitingNetwork: ${download.id}")
+    }
+
+    //endregion
+
+    operator fun invoke(
+            serieToDownload: Serie,
+            callback: DownloadFileUseCaseListener) {
+
+        val file = getFile(serieToDownload)
+        val request = Request(serieToDownload.downloadUrl, file.absolutePath).apply {
             downloadOnEnqueue = true
             priority = NORMAL
             networkType = WIFI_ONLY
+            identifier = serieToDownload.id
 
         }
+        seriesMap[request.identifier] = serieToDownload
 
-        downloadManager.addListener(listener)
+        if (!callbacks.contains(callback)) {
+            this.callbacks.add(callback)
+        }
+
         downloadManager.enqueue(request, Func {
-            //            logger.d(TAG, "Request Enqueued")
+            logger.d(TAG, "Request Enqueued ${it.id} - ${it.identifier}")
         }, Func {
             logger.d(TAG, "Request Error: ${it.throwable?.message}")
         })
@@ -146,19 +167,48 @@ class DownloadFileUseCase(
     }
 
     fun invokePaused(serie: Serie) {
-        map[serie.id]?.let { downloadManager.pause(it) }
+        downloadManager.getDownloadsByRequestIdentifier(serie.id, Func { downloadList ->
+            logger.d(TAG, "invokePaused: ${downloadList.map { it.id }}")
+            downloadManager.pause(downloadList.map { it.id })
+        })
     }
 
     fun invokeResume(serie: Serie) {
-        map[serie.id]?.let { downloadManager.resume(it) }
+        downloadManager.getDownloadsByRequestIdentifier(serie.id, Func { downloadList ->
+            logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
+            downloadManager.resume(downloadList.map { it.id })
+        })
     }
 
     fun invokeCancel(serie: Serie) {
-        map[serie.id]?.let { downloadManager.delete(it) }
+        downloadManager.getDownloadsByRequestIdentifier(serie.id, Func { downloadList ->
+            logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
+            downloadManager.delete(downloadList.map { it.id })
+        })
     }
 
     private fun updateStatus(download: Download) {
         logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toPercentage()}")
     }
 
+    private fun removeFile(serie: Serie) {
+        val file = getFile(serie)
+        val deleted = file.delete()
+        logger.d(TAG, "Removing File: ${file.absoluteFile} $deleted")
+    }
+
+    private fun getFile(serie: Serie): File {
+        val storageDir = File(Environment.getExternalStoragePublicDirectory(PATH), DIRECTORY).apply { mkdirs() }
+        return File(storageDir, "${serie.title}.mp4")
+    }
+
+    interface DownloadFileUseCaseListener {
+        fun onSuccess(serie: SerieDownloaded) = Unit
+        fun onError(serie: SerieDownloaded) = Unit
+        fun onQueued(serie: SerieDownloaded) = Unit
+        fun onProgress(serie: SerieDownloaded) = Unit
+        fun onPaused(serie: SerieDownloaded) = Unit
+        fun onResumed(serie: SerieDownloaded) = Unit
+        fun onDeleted(serie: SerieDownloaded) = Unit
+    }
 }
