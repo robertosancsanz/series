@@ -25,7 +25,10 @@ import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.ERROR
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.INITIAL
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.PAUSED
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCase
 import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.permission.Permission
 import com.android.es.roversanz.series.utils.permission.PermissionHandler
@@ -175,13 +178,17 @@ class SeriesDetailFragment : Fragment() {
 
         @Provides
         @FragmentScope
-        internal fun provideSeriesDetailViewModelFactory(useCase: DownloadFileUseCase):
+        internal fun provideSeriesDetailViewModelFactory(useCaseDownload: DownloadFileUseCase,
+                                                         useCasePauseDownload: PauseDownloadFileUseCase,
+                                                         useCaseResumeDownload: ResumeDownloadFileUseCase,
+                                                         useCaseCancelDownload: CancelDownloadFileUseCase):
                 SeriesDetailViewModelFactory {
             val serie: Serie = arguments?.get(SERIE_TAG) as? Serie
                                ?: throw ClassCastException("SeriesDetailFragment must initialize  with an item")
-            return SeriesDetailViewModelFactory(useCase, serie)
+            return SeriesDetailViewModelFactory(useCaseDownload, useCasePauseDownload, useCaseResumeDownload, useCaseCancelDownload, serie)
         }
     }
 
     //endregion
+
 }

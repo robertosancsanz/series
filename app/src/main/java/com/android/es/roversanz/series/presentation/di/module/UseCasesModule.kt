@@ -1,9 +1,13 @@
 package com.android.es.roversanz.series.presentation.di.module
 
 import android.content.Context
+import com.android.es.roversanz.series.data.DownloadManager
 import com.android.es.roversanz.series.data.SerieRepository
+import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.provider.SchedulersProvider
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
 import com.android.es.roversanz.series.usecases.series.GetSerieDetailUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
@@ -59,7 +63,11 @@ class UseCasesModule {
 
     @Provides
     @Singleton
-    internal fun provideDownloadManager(ctx: Context, okHttpClient: OkHttpClient): Fetch {
+    internal fun provideDownloadManager(
+            ctx: Context,
+            okHttpClient: OkHttpClient,
+            logger: Logger,
+            resourceProvider: ResourceProvider): DownloadManager {
         val fetchConfiguration = FetchConfiguration.Builder(ctx)
                 .setDownloadConcurrentLimit(1)
                 .setGlobalNetworkType(NetworkType.WIFI_ONLY)
@@ -67,14 +75,17 @@ class UseCasesModule {
                 .setNamespace("SERIES")
                 .enableRetryOnNetworkGain(true)
                 .build()
-        return Fetch.getInstance(fetchConfiguration).apply {
+        val fetch = Fetch.getInstance(fetchConfiguration).apply {
             enableLogging(true)
             removeAllWithStatus(DELETED)
             removeAllWithStatus(CANCELLED)
             removeAllWithStatus(FAILED)
             removeAllWithStatus(NONE)
             removeAllWithStatus(REMOVED)
+            removeAll()
         }
+
+        return DownloadManager(logger, fetch, resourceProvider)
     }
 
     @Provides
@@ -91,8 +102,18 @@ class UseCasesModule {
 
     @Provides
     @Singleton
-    internal fun provideDownloadFileUseCase(logger: Logger,
-                                            downloadManager: Fetch,
-                                            resourceProvider: ResourceProvider) = DownloadFileUseCase(logger, downloadManager, resourceProvider)
+    internal fun provideDownloadFileUseCase(downloadManager: DownloadManager) = DownloadFileUseCase(downloadManager)
+
+    @Provides
+    @Singleton
+    internal fun providePauseDownloadFileUseCase(downloadManager: DownloadManager) = PauseDownloadFileUseCase(downloadManager)
+
+    @Provides
+    @Singleton
+    internal fun provideResumeDownloadFileUseCase(downloadManager: DownloadManager) = ResumeDownloadFileUseCase(downloadManager)
+
+    @Provides
+    @Singleton
+    internal fun provideCancelDownloadFileUseCase(downloadManager: DownloadManager) = CancelDownloadFileUseCase(downloadManager)
 
 }
