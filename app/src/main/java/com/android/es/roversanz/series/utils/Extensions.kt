@@ -10,9 +10,11 @@ fun Int.toPercentage(): String = "${String.format("%.2f", if (this >= 0) this.to
 
 fun Context.toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-inline fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG, f: Snackbar.() -> Unit) = snack(resources.getString(messageRes), length, f)
+inline fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG, f: Snackbar.() -> Unit)
+        = snack(resources.getString(messageRes), length, f)
 
-fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG) = snack(resources.getString(messageRes), length)
+fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG)
+        = snack(resources.getString(messageRes), length)
 
 inline fun View.snack(message: String, length: Int = Snackbar.LENGTH_LONG, f: Snackbar.() -> Unit) {
     val snack = Snackbar.make(this, message, length)
