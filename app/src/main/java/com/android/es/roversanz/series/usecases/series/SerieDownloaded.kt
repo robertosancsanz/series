@@ -8,13 +8,17 @@ data class SerieDownloaded(val serie: Serie,
                            val filePath: String? = null,
                            val progress: String? = null) {
 
-    fun customError(): String = this.serie.title + ": " + error
+    override fun equals(other: Any?): Boolean =
+            this.serie == (other as? SerieDownloaded)?.serie ?: false
 
-    override fun equals(other: Any?): Boolean {
-        return this.serie == (other as SerieDownloaded).serie
-    }
-
+    @Suppress("MagicNumber")
     override fun hashCode(): Int {
-        return super.hashCode()
+        var result = serie.hashCode()
+        result = 31 * result + state.hashCode()
+        result = 31 * result + (error?.hashCode() ?: 0)
+        result = 31 * result + (filePath?.hashCode() ?: 0)
+        result = 31 * result + (progress?.hashCode() ?: 0)
+        return result
     }
+
 }

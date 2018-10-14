@@ -133,7 +133,12 @@ class DownloadManager(
                           ?: resourceProvider.getString(R.string.error_general)
             logger.d(TAG, "onError: ${download.id} -- ${serie.title}")
             callbacks.iterator().forEach { callback ->
-                callback.onError(SerieDownloaded(serie = serie, state = download.status.name, error = message, progress = download.progress.toPercentage()))
+                callback.onError(SerieDownloaded(
+                        serie = serie,
+                        state = download.status.name,
+                        error = message,
+                        progress = download.progress.toPercentage()
+                ))
             }
         }
     }

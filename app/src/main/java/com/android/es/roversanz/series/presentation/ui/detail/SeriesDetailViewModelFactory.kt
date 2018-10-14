@@ -14,7 +14,8 @@ class SeriesDetailViewModelFactory(private val useCaseDownload: DownloadFileUseC
                                    private val useCaseCancelDownload: CancelDownloadFileUseCase,
                                    private val serie: Serie) : ViewModelProvider.Factory {
 
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T = SeriesDetailViewModel(useCaseDownload, useCasePauseDownload, useCaseResumeDownload, useCaseCancelDownload, serie) as? T
-                                                                    ?: throw IllegalArgumentException("This factory can only create SeriesDetailViewModel instances")
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T
+            = SeriesDetailViewModel(useCaseDownload, useCasePauseDownload, useCaseResumeDownload, useCaseCancelDownload, serie) as? T
+              ?: throw IllegalArgumentException("This factory can only create SeriesDetailViewModel instances")
 
 }

@@ -19,8 +19,8 @@ import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [ApplicationModule::class, LoggerModule::class, RepositoryModule::class,
-    UseCasesModule::class])
+@Suppress("ComplexInterface")
+@Component(modules = [ApplicationModule::class, LoggerModule::class, RepositoryModule::class, UseCasesModule::class])
 interface MainComponent {
 
     fun provideContext(): Context

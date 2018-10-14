@@ -36,6 +36,7 @@ import com.android.es.roversanz.series.utils.snack
 import dagger.Component
 import dagger.Module
 import dagger.Provides
+import dagger.android.AndroidInjection.inject
 import kotlinx.android.synthetic.main.fragment_list_series.download_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_empty_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_error_list
@@ -69,8 +70,10 @@ class SeriesListFragment : Fragment() {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View = inflater.inflate(R.layout.fragment_list_series, null)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View
+            = inflater.inflate(R.layout.fragment_list_series, null)
 
+    @Suppress("LabeledExpression")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -164,7 +167,7 @@ class SeriesListFragment : Fragment() {
             is DownloadSerieState.REMOVE       -> downloadAdapter.removeSerie(state.serieDownloaded)
             is DownloadSerieState.ERROR        -> {
                 downloadAdapter.addSerie(state.serieDownloaded)
-                view?.snack(state.serieDownloaded.customError(), Snackbar.LENGTH_SHORT)
+                view?.snack("${state.serieDownloaded.serie.title}: ${state.serieDownloaded.error}", Snackbar.LENGTH_SHORT)
             }
         }
 
@@ -207,7 +210,8 @@ class SeriesListFragment : Fragment() {
 
         @Provides
         @FragmentScope
-        internal fun provideSeriesListViewModelFactory(useCase: GetSeriesListUseCase, useCaseDownload: DownloadFileUseCase,
+        internal fun provideSeriesListViewModelFactory(useCase: GetSeriesListUseCase,
+                                                       useCaseDownload: DownloadFileUseCase,
                                                        useCasePauseDownload: PauseDownloadFileUseCase,
                                                        useCaseResumeDownload: ResumeDownloadFileUseCase,
                                                        useCaseCancelDownload: CancelDownloadFileUseCase

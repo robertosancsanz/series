@@ -29,7 +29,8 @@ class DownloadSeriesAdapter(
 
     private var series: MutableList<SerieDownloaded> = mutableListOf()
 
-    override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder = SeriesViewHolder(parent.inflate(R.layout.item_serie_downloading))
+    override fun onCreateViewHolder(parent: ViewGroup, type: Int): SeriesViewHolder
+            = SeriesViewHolder(parent.inflate(R.layout.item_serie_downloading))
 
     override fun getItemCount() = series.size
 
