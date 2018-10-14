@@ -6,13 +6,18 @@ import android.arch.lifecycle.ViewModel
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.CHECKPERMISSION
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase.DownloadFileUseCaseListener
+import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 import com.android.es.roversanz.series.utils.toPercentage
 
-class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
-                            private val serie: Serie) : ViewModel(), DownloadFileUseCaseListener {
+class SeriesDetailViewModel(private val useCaseDownload: DownloadFileUseCase,
+                            private val useCasePauseDownload: PauseDownloadFileUseCase,
+                            private val useCaseResumeDownload: ResumeDownloadFileUseCase,
+                            private val useCaseCancelDownload: CancelDownloadFileUseCase,
+                            private val serie: Serie) : ViewModel() {
 
     private val state = MutableLiveData<SeriesDetailState>().apply {
         value = SeriesDetailState.INITIAL
@@ -23,47 +28,48 @@ class SeriesDetailViewModel(private val useCase: DownloadFileUseCase,
     }
 
     fun downloadChapter() = when (state.value) {
-        SeriesDetailState.PAUSED             -> useCase.invokeResume(serie)
-        is SeriesDetailState.DOWNLOADING     -> useCase.invokePaused(serie)
-        is SeriesDetailState.DOWNLOADED      -> state.postValue(DOWNLOADED(serie.file))
-        SeriesDetailState.CHECKPERMISSION -> useCase.invoke(serie, this)
-        else                                 -> state.postValue(CHECKPERMISSION)
+        SeriesDetailState.PAUSED          -> useCaseResumeDownload(serie, ::onResumed)
+        is SeriesDetailState.DOWNLOADING  -> useCasePauseDownload(serie, ::onPaused)
+        is SeriesDetailState.DOWNLOADED   -> state.postValue(DOWNLOADED(serie.file))
+        SeriesDetailState.CHECKPERMISSION -> useCaseDownload(serie, ::onSuccess, ::onError, ::onQueued, ::onProgress)
+        else                              -> state.postValue(CHECKPERMISSION)
     }
 
 
     fun cancelDownloadChapter() {
-        useCase.invokeCancel(serie)
+        useCaseCancelDownload(serie, ::onDeleted)
     }
 
-    //region DownloadFileUseCaseListener
+    //region Download
 
-    override fun onProgress(serieDownloaded: SerieDownloaded) {
+
+    private fun onQueued(serieDownloaded: SerieDownloaded) {
+        state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
+    }
+
+    private fun onProgress(serieDownloaded: SerieDownloaded) {
         serieDownloaded.progress?.let { state.postValue(SeriesDetailState.DOWNLOADING(it)) }
     }
 
-    override fun onSuccess(serieDownloaded: SerieDownloaded) {
+    private fun onSuccess(serieDownloaded: SerieDownloaded) {
         this.serie.file = serieDownloaded.filePath
         state.postValue(SeriesDetailState.DOWNLOADED(null))
     }
 
-    override fun onQueued(serieDownloaded: SerieDownloaded) {
-        state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
+    private fun onError(serieDownloaded: SerieDownloaded) {
+        serieDownloaded.error?.let { state.postValue(SeriesDetailState.ERROR(it)) }
     }
 
-    override fun onPaused(serieDownloaded: SerieDownloaded) {
+    private fun onPaused(serieDownloaded: SerieDownloaded) {
         state.postValue(SeriesDetailState.PAUSED)
     }
 
-    override fun onResumed(serieDownloaded: SerieDownloaded) {
+    private fun onResumed(serieDownloaded: SerieDownloaded) {
         serieDownloaded.progress?.let { state.postValue(SeriesDetailState.DOWNLOADING(it)) }
     }
 
-    override fun onDeleted(serieDownloaded: SerieDownloaded) {
+    private fun onDeleted(serieDownloaded: SerieDownloaded) {
         state.postValue(SeriesDetailState.INITIAL)
-    }
-
-    override fun onError(serieDownloaded: SerieDownloaded) {
-        serieDownloaded.error?.let { state.postValue(SeriesDetailState.ERROR(it)) }
     }
 
     //endregion

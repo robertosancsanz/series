@@ -19,7 +19,10 @@ import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.FragmentScope
 import com.android.es.roversanz.series.presentation.ui.list.adapters.DownloadSeriesAdapter
 import com.android.es.roversanz.series.presentation.ui.list.adapters.SeriesAdapter
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.logger.Logger
@@ -204,7 +207,12 @@ class SeriesListFragment : Fragment() {
 
         @Provides
         @FragmentScope
-        internal fun provideSeriesListViewModelFactory(useCase: GetSeriesListUseCase, usecaseDownload: DownloadFileUseCase) = SeriesListViewModelFactory(useCase, usecaseDownload)
+        internal fun provideSeriesListViewModelFactory(useCase: GetSeriesListUseCase, useCaseDownload: DownloadFileUseCase,
+                                                       useCasePauseDownload: PauseDownloadFileUseCase,
+                                                       useCaseResumeDownload: ResumeDownloadFileUseCase,
+                                                       useCaseCancelDownload: CancelDownloadFileUseCase
+        ) = SeriesListViewModelFactory(useCase, useCaseDownload, useCasePauseDownload,
+                                       useCaseResumeDownload, useCaseCancelDownload)
     }
 
     //endregion

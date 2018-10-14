@@ -4,14 +4,19 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.android.es.roversanz.series.domain.Serie
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase
-import com.android.es.roversanz.series.usecases.series.DownloadFileUseCase.DownloadFileUseCaseListener
+import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
+import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 
 class SeriesListViewModel(
         private val useCase: GetSeriesListUseCase,
-        private val useCaseDownload: DownloadFileUseCase) : ViewModel(), DownloadFileUseCaseListener {
+        private val useCaseDownload: DownloadFileUseCase,
+        private val useCasePauseDownload: PauseDownloadFileUseCase,
+        private val useCaseResumeDownload: ResumeDownloadFileUseCase,
+        private val useCaseCancelDownload: CancelDownloadFileUseCase) : ViewModel() {
 
     private val state = MutableLiveData<SeriesListState>().apply {
         value = SeriesListState.INITIAL
@@ -36,19 +41,19 @@ class SeriesListViewModel(
     }
 
     fun onSerieDownload() {
-        useCaseDownload.invoke(currentSerie, this)
+        useCaseDownload(currentSerie, ::onSuccess, ::onError, ::onQueued, ::onProgress)
     }
 
     fun onPause(serie: Serie) {
-        useCaseDownload.invokePaused(serie, this)
+        useCasePauseDownload(serie, ::onPaused)
     }
 
     fun onResume(serie: Serie) {
-        useCaseDownload.invokeResume(serie, this)
+        useCaseResumeDownload(serie, ::onResumed)
     }
 
     fun onRemove(serie: Serie) {
-        useCaseDownload.invokeCancel(serie, this)
+        useCaseCancelDownload(serie, ::onDeleted)
     }
 
     //region GetSeriesListUseCase
@@ -65,33 +70,33 @@ class SeriesListViewModel(
 
     //endregion
 
-    //region DownloadFileUseCase
+    //region Download
 
-    override fun onQueued(serieDownloaded: SerieDownloaded) {
+    private fun onQueued(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
     }
 
-    override fun onProgress(serieDownloaded: SerieDownloaded) {
+    private fun onProgress(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
     }
 
-    override fun onPaused(serieDownloaded: SerieDownloaded) {
-        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
-    }
-
-    override fun onResumed(serieDownloaded: SerieDownloaded) {
-        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
-    }
-
-    override fun onSuccess(serieDownloaded: SerieDownloaded) {
+    private fun onSuccess(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.DOWNLOADED(serieDownloaded))
     }
 
-    override fun onError(serieDownloaded: SerieDownloaded) {
+    private fun onError(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.ERROR(serieDownloaded))
     }
 
-    override fun onDeleted(serieDownloaded: SerieDownloaded) {
+    private fun onResumed(serieDownloaded: SerieDownloaded) {
+        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
+    }
+
+    private fun onPaused(serieDownloaded: SerieDownloaded) {
+        downloadState.postValue(DownloadSerieState.DOWNLOAD(serieDownloaded))
+    }
+
+    private fun onDeleted(serieDownloaded: SerieDownloaded) {
         downloadState.postValue(DownloadSerieState.REMOVE(serieDownloaded))
     }
 
