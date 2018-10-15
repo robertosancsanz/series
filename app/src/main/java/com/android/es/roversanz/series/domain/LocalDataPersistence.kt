@@ -19,7 +19,8 @@ class LocalDataPersistence : DataPersistence {
 //More videos on https://www.sample-videos.com/
 //"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg"
 //"https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_1mb.mp4"
-"https://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_30mb.mp4"
+//"https://www.sample-videos.com/video/mp4/480/big_buck_bunny_480p_30mb.mp4"
+"http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.mp4"
                 ),
                 Serie(2, "Picky Blinders", "Son mu malos", "Serie de TV (2013-Actualidad). Una familia de " +
 "gánsters asentada en Birmingham tras la Primera Guerra Mundial (1914-1918), dirige un local de apuestas hípicas. Las actividades del ambicioso " +
@@ -27,7 +28,8 @@ class LocalDataPersistence : DataPersistence {
 "para limpiar la ciudad y acabar con la banda.", 4.4,
 "https://i.blogs.es/f8389e/espinof-critica-de-peaky-blinders-temporada-4/450_1000.jpg",
 //"https://www.noao.edu/image_gallery/images/d7/cygloop.jpg"
-"https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_10mb.mp4"
+//"https://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_10mb.mp4"
+"http://mirrors.standaloneinstaller.com/video-sample/Panasonic_HDC_TM_700_P_50i.mp4"
                 ))
     }
 
