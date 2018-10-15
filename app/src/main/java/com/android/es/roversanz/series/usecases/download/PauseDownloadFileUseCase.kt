@@ -18,8 +18,8 @@ class PauseDownloadFileUseCase(private val downloadManager: DownloadManager) : U
                     cb.invoke(serieDownloaded)
                     downloadManager.removeCallbacks(this)
                 }
-            }
-            downloadManager.addToCallbacks(listener)
+            }.apply { downloadManager.addToCallbacks(this) }
+
         }
         downloadManager.pause(serie.id)
     }
