@@ -33,9 +33,8 @@ class DownloadFileUseCase(private val downloadManager: DownloadManager) : UseCas
                 onError.invoke(serieDownloaded)
                 downloadManager.removeCallbacks(this)
             }
-        }
+        }.apply { downloadManager.addToCallbacks(this) }
 
-        downloadManager.addToCallbacks(listener)
         downloadManager.download(serieToDownload)
     }
 

@@ -18,8 +18,7 @@ class ResumeDownloadFileUseCase(private val downloadManager: DownloadManager) : 
                     cb.invoke(serieDownloaded)
                     downloadManager.removeCallbacks(this)
                 }
-            }
-            downloadManager.addToCallbacks(listener)
+            }.apply { downloadManager.addToCallbacks(this) }
         }
         downloadManager.resume(serie.id)
     }
