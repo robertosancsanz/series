@@ -69,7 +69,8 @@ class SeriesListFragment : Fragment() {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View = inflater.inflate(R.layout.fragment_list_series, null)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View
+            = inflater.inflate(R.layout.fragment_list_series, null)
 
     @Suppress("LabeledExpression")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -19,6 +19,7 @@ import com.tonyodev.fetch2core.Func
 import java.io.File
 import java.lang.ref.WeakReference
 
+@Suppress("LargeClass")
 class DownloadManager(
         private val logger: Logger,
         private val fetch: Fetch,
@@ -218,8 +219,8 @@ class DownloadManager(
         synchronized(callbackLock) {
             val iterator = callbacks.iterator()
             while (iterator.hasNext()) {
-                val cb = iterator.next()
-                if (cb == callback) {
+                val call = iterator.next()
+                if (call == callback) {
                     iterator.remove()
                     logger.d(TAG, "Removing Callback: $callback} ${callbacks.size}")
                 }
