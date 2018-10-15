@@ -33,14 +33,14 @@ class MainActivity : AppCompatActivity(), SeriesListFragmentListener {
 
         inject(app())
 
-        viewModel.getState().observe(this, Observer { state ->
+        viewModel.state.observe(this, Observer { state ->
             state?.let { handleState(it) }
         })
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.getState().removeObservers(this)
+        viewModel.state.removeObservers(this)
     }
 
     private fun handleState(state: MainState) {
