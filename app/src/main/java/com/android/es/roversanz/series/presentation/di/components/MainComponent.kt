@@ -31,8 +31,6 @@ interface MainComponent {
 
     fun provideSerieRepository(): SerieRepository
 
-    fun provideDownloadManager(): DownloadManager
-
     fun provideGetSeriesListUseCase(): GetSeriesListUseCase
 
     fun provideGetSerieDetailUseCase(): GetSerieDetailUseCase
