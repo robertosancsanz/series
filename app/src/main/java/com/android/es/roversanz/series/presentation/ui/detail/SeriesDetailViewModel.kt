@@ -19,20 +19,24 @@ class SeriesDetailViewModel(private val useCaseDownload: DownloadFileUseCase,
                             private val useCaseCancelDownload: CancelDownloadFileUseCase,
                             private val serie: Serie) : ViewModel() {
 
-    private val state = MutableLiveData<SeriesDetailState>().apply {
+    private val _state = MutableLiveData<SeriesDetailState>().apply {
         value = SeriesDetailState.INITIAL
     }
 
+    val state: LiveData<SeriesDetailState>
+        get() = _state
+
+
     init {
-        state.postValue(SeriesDetailState.DONE(serie))
+        _state.postValue(SeriesDetailState.DONE(serie))
     }
 
-    fun downloadChapter() = when (state.value) {
+    fun downloadChapter() = when (_state.value) {
         SeriesDetailState.PAUSED          -> useCaseResumeDownload(serie, ::onResumed)
         is SeriesDetailState.DOWNLOADING  -> useCasePauseDownload(serie, ::onPaused)
-        is SeriesDetailState.DOWNLOADED   -> state.postValue(DOWNLOADED(serie.file))
+        is SeriesDetailState.DOWNLOADED   -> _state.postValue(DOWNLOADED(serie.file))
         SeriesDetailState.CHECKPERMISSION -> useCaseDownload(serie, ::onSuccess, ::onError, ::onQueued, ::onProgress)
-        else                              -> state.postValue(CHECKPERMISSION)
+        else                              -> _state.postValue(CHECKPERMISSION)
     }
 
 
@@ -44,36 +48,34 @@ class SeriesDetailViewModel(private val useCaseDownload: DownloadFileUseCase,
 
 
     private fun onQueued(serieDownloaded: SerieDownloaded) {
-        state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
+        _state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
     }
 
     private fun onProgress(serieDownloaded: SerieDownloaded) {
-        serieDownloaded.progress?.let { state.postValue(SeriesDetailState.DOWNLOADING(it)) }
+        serieDownloaded.progress?.let { _state.postValue(SeriesDetailState.DOWNLOADING(it)) }
     }
 
     private fun onSuccess(serieDownloaded: SerieDownloaded) {
         this.serie.file = serieDownloaded.filePath
-        state.postValue(SeriesDetailState.DOWNLOADED(null))
+        _state.postValue(SeriesDetailState.DOWNLOADED(null))
     }
 
     private fun onError(serieDownloaded: SerieDownloaded) {
-        serieDownloaded.error?.let { state.postValue(SeriesDetailState.ERROR(it)) }
+        serieDownloaded.error?.let { _state.postValue(SeriesDetailState.ERROR(it)) }
     }
 
     private fun onPaused(serieDownloaded: SerieDownloaded) {
-        state.postValue(SeriesDetailState.PAUSED)
+        _state.postValue(SeriesDetailState.PAUSED)
     }
 
     private fun onResumed(serieDownloaded: SerieDownloaded) {
-        serieDownloaded.progress?.let { state.postValue(SeriesDetailState.DOWNLOADING(it)) }
+        serieDownloaded.progress?.let { _state.postValue(SeriesDetailState.DOWNLOADING(it)) }
     }
 
     private fun onDeleted(serieDownloaded: SerieDownloaded) {
-        state.postValue(SeriesDetailState.INITIAL)
+        _state.postValue(SeriesDetailState.INITIAL)
     }
 
     //endregion
-
-    fun getState(): LiveData<SeriesDetailState> = state
 
 }

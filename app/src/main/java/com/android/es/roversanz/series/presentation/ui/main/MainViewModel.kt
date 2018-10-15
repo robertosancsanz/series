@@ -7,19 +7,21 @@ import com.android.es.roversanz.series.domain.Serie
 
 class MainViewModel : ViewModel() {
 
-    private val state = MutableLiveData<MainState>().apply {
+    private val _state = MutableLiveData<MainState>().apply {
         value = MainState.INITIAL
     }
 
+    val state: LiveData<MainState>
+        get() = _state
+
+
     init {
-        state.postValue(MainState.LIST)
+        _state.postValue(MainState.LIST)
     }
 
     fun onSerieSelected(serie: Serie) {
-        state.postValue(MainState.DETAIL(serie))
+        _state.postValue(MainState.DETAIL(serie))
     }
-
-    fun getState(): LiveData<MainState> = state
 
 }
 

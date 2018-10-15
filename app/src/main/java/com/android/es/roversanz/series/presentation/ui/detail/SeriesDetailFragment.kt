@@ -52,8 +52,6 @@ import javax.inject.Inject
 class SeriesDetailFragment : Fragment() {
 
     companion object {
-
-        private val TAG: String = SeriesDetailFragment::class.java.simpleName
         private const val SERIE_TAG: String = "serie_tag"
 
         fun getInstance(serie: Serie): SeriesDetailFragment = SeriesDetailFragment().apply {
@@ -79,7 +77,7 @@ class SeriesDetailFragment : Fragment() {
             ActivityCompat.requestPermissions(it, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 123)
         }
 
-        viewModel.getState().observe(this, Observer { state -> state?.let { handleState(it) } })
+        viewModel.state.observe(this, Observer { state -> state?.let { handleState(it) } })
 
         serie_download_button.setOnClickListener { viewModel.downloadChapter() }
 
@@ -88,9 +86,8 @@ class SeriesDetailFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.getState().removeObservers(this)
+        viewModel.state.removeObservers(this)
     }
-
 
     //region Permission
 

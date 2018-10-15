@@ -36,7 +36,6 @@ import com.android.es.roversanz.series.utils.snack
 import dagger.Component
 import dagger.Module
 import dagger.Provides
-import dagger.android.AndroidInjection.inject
 import kotlinx.android.synthetic.main.fragment_list_series.download_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_empty_list
 import kotlinx.android.synthetic.main.fragment_list_series.series_error_list
@@ -70,8 +69,7 @@ class SeriesListFragment : Fragment() {
         ViewModelProviders.of(this, factory)[SeriesListViewModel::class.java]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View
-            = inflater.inflate(R.layout.fragment_list_series, null)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View = inflater.inflate(R.layout.fragment_list_series, null)
 
     @Suppress("LabeledExpression")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -103,10 +101,10 @@ class SeriesListFragment : Fragment() {
         }
 
         viewModel.apply {
-            getState().observe(this@SeriesListFragment, Observer { state ->
+            state.observe(this@SeriesListFragment, Observer { state ->
                 state?.let { handleState(it) }
             })
-            getDownloadState().observe(this@SeriesListFragment, Observer { state ->
+            downloadState.observe(this@SeriesListFragment, Observer { state ->
                 state?.let { handleDownloadState(it) }
             })
         }
@@ -118,7 +116,8 @@ class SeriesListFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.getState().removeObservers(this)
+        viewModel.state.removeObservers(this)
+        viewModel.downloadState.removeObservers(this)
     }
 
     //region Permission
