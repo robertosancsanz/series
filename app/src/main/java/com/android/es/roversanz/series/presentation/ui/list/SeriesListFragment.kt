@@ -182,6 +182,7 @@ class SeriesListFragment : Fragment() {
     }
 
     private fun playSerie(path: String) {
+        logger.d("DOWNLOADED", "Playing: $path")
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(path)).apply {
             setDataAndType(Uri.parse(path), "video/mp4")
         }
