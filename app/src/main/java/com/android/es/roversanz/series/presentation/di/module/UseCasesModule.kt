@@ -34,9 +34,9 @@ import javax.inject.Singleton
 class UseCasesModule {
 
     companion object {
-        private val CONNECT_TIMEOUT = 1500
-        private val READ_TIMEOUT = 1000
-        private val KEEP_ALIVE_TIME = 1000
+        private val CONNECT_TIMEOUT = 5
+        private val READ_TIMEOUT = 3
+        private val KEEP_ALIVE_TIME = 3
         private val THREAD_COUNT = 4
     }
 
@@ -47,12 +47,12 @@ class UseCasesModule {
     @Provides
     @Singleton
     internal fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder().apply {
-        connectionPool(ConnectionPool(THREAD_COUNT, KEEP_ALIVE_TIME.toLong(), TimeUnit.MILLISECONDS))
+        connectionPool(ConnectionPool(THREAD_COUNT, KEEP_ALIVE_TIME.toLong(), TimeUnit.SECONDS))
         followRedirects(true)
         followSslRedirects(true)
         retryOnConnectionFailure(true)
-        readTimeout(READ_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
-        connectTimeout(CONNECT_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
+        readTimeout(READ_TIMEOUT.toLong(), TimeUnit.SECONDS)
+        connectTimeout(CONNECT_TIMEOUT.toLong(), TimeUnit.SECONDS)
         //cookieJar(JavaNetCookieJar(CookieHandler.setDefault(CookieManager().apply {
         //  setCookiePolicy(CookiePolicy.ACCEPT_ALL)
         //})))
@@ -85,7 +85,7 @@ class UseCasesModule {
             removeAll()
         }
 
-        return DownloadManager(logger, fetch, resourceProvider)
+        return DownloadManager(ctx, logger, fetch, resourceProvider)
     }
 
     @Provides

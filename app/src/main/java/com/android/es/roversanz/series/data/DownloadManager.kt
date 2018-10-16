@@ -1,6 +1,11 @@
 package com.android.es.roversanz.series.data
 
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
+import android.content.Context
+import android.media.MediaScannerConnection
 import android.os.Environment
+import android.util.Log
 import com.android.es.roversanz.series.R
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
@@ -17,10 +22,10 @@ import com.tonyodev.fetch2.Request
 import com.tonyodev.fetch2core.DownloadBlock
 import com.tonyodev.fetch2core.Func
 import java.io.File
-import java.lang.ref.WeakReference
 
 @Suppress("LargeClass")
 class DownloadManager(
+        private val context: Context,
         private val logger: Logger,
         private val fetch: Fetch,
         private val resourceProvider: ResourceProvider) : FetchListener {
@@ -33,12 +38,67 @@ class DownloadManager(
 
     private val seriesMap = mutableMapOf<Long, Serie>()
     private val serieLock = Any()
-    private var callbacks = mutableListOf<WeakReference<DownloadFileUseCaseListener>>()
-    private val callbackLock = Any()
+//    private var callbacks = mutableListOf<WeakReference<DownloadFileUseCaseListener>>()
+//    private val callbackLock = Any()
 
     init {
         fetch.addListener(this)
     }
+
+    //region Operations
+
+    fun download(serieToDownload: Serie) {
+
+        if (!seriesMap.contains(serieToDownload.id)) {
+            fetch.getDownloadsByRequestIdentifier(serieToDownload.id, Func { downloadList ->
+
+                if (downloadList.isNotEmpty()) {
+                    logger.d(TAG, "invokeRemoving: ${downloadList.map { it.id }}")
+                    fetch.remove(downloadList.map { it.id }, Func {
+                        logger.d(TAG, "Requests Removed ${it.map { down -> down.request.id }}")
+                        downLoadSerie(serieToDownload)
+                    }, Func {
+                        logger.d(TAG, "Failed to remove Requests ${it.throwable?.message}")
+                        downLoadSerie(serieToDownload)
+                    })
+                } else {
+                    downLoadSerie(serieToDownload)
+                }
+            })
+        } else {
+            Log.d(TAG, "Serie ${serieToDownload.title} is already downloading")
+        }
+    }
+
+    fun pause(serieId: Long) {
+        fetch.getDownloadsByRequestIdentifier(serieId, Func { downloadList ->
+            if (downloadList.isNotEmpty()) {
+                logger.d(TAG, "invokePaused: ${downloadList.map { it.id }}")
+                fetch.pause(downloadList.map { it.id })
+            }
+        })
+
+    }
+
+    fun resume(serieId: Long) {
+        fetch.getDownloadsByRequestIdentifier(serieId, Func { downloadList ->
+            if (downloadList.isNotEmpty()) {
+                logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
+                fetch.resume(downloadList.map { it.id })
+            }
+        })
+    }
+
+    fun cancel(serieId: Long) {
+        fetch.getDownloadsByRequestIdentifier(serieId, Func { downloadList ->
+            if (downloadList.isNotEmpty()) {
+                logger.d(TAG, "invokeCancel: ${downloadList.map { it.id }}")
+                fetch.delete(downloadList.map { it.id })
+            }
+        })
+    }
+
+    //endregion
 
     //region listener
 
@@ -49,13 +109,8 @@ class DownloadManager(
     override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
         updateStatus(download)
         getSerie(download.request.identifier)?.let { serie ->
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onQueued(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
-                }
-            }
+            _state.postValue(DownloadManagerState.QUEUED(
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
         }
     }
 
@@ -66,13 +121,8 @@ class DownloadManager(
     override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
         updateStatus(download)
         getSerie(download.request.identifier)?.let { serie ->
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onProgress(SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage()))
-                }
-            }
+            _state.postValue(DownloadManagerState.PROGRESS(
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
         }
     }
 
@@ -83,28 +133,16 @@ class DownloadManager(
     override fun onPaused(download: Download) {
         updateStatus(download)
         getSerie(download.request.identifier)?.let { serie ->
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onPaused(SerieDownloaded(serie = serie, state = download.status
-                            .name, progress = download.progress.toPercentage()))
-                }
-            }
+            _state.postValue(DownloadManagerState.PAUSED(
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
         }
     }
 
     override fun onResumed(download: Download) {
         updateStatus(download)
         getSerie(download.request.identifier)?.let { serie ->
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onResumed(SerieDownloaded(serie = serie, state = download.status.name,
-                                                          progress = download.progress.toPercentage()))
-                }
-            }
+            _state.postValue(DownloadManagerState.RESUMED(
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
         }
     }
 
@@ -113,14 +151,10 @@ class DownloadManager(
         getSerie(download.request.identifier)?.let { serie ->
             val file = getFile(serie)
             logger.d(TAG, "onCompleted: ${download.id} -- ${serie.title}")
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onSuccess(SerieDownloaded(serie, download.status.name, download.progress
-                            .toPercentage(), file.absolutePath))
-                }
-            }
+            updateFolder(file.path)
+            _state.postValue(DownloadManagerState.COMPLETED(
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(),
+                                    filePath = file.absolutePath)))
             removeSerie(download.request.identifier)
         }
     }
@@ -139,13 +173,7 @@ class DownloadManager(
         fetch.remove(download.id)
         getSerie(download.request.identifier)?.let { serie ->
             removeFile(serie)
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onDeleted(SerieDownloaded(serie, download.status.name))
-                }
-            }
+            _state.postValue(DownloadManagerState.DELETED(SerieDownloaded(serie = serie, state = download.status.name)))
             removeSerie(download.request.identifier)
         }
     }
@@ -159,13 +187,8 @@ class DownloadManager(
             val message = error.throwable?.message
                           ?: resourceProvider.getString(R.string.error_general)
             logger.d(TAG, "onError: ${download.id} -- ${serie.title}")
-            synchronized(callbackLock) {
-                val iterator = callbacks.iterator()
-                while (iterator.hasNext()) {
-                    val call = iterator.next()
-                    call.get()?.onError(SerieDownloaded(serie, download.status.name, message, download.progress.toPercentage()))
-                }
-            }
+            _state.postValue(DownloadManagerState.ERROR(
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
             removeSerie(download.request.identifier)
         }
     }
@@ -175,10 +198,6 @@ class DownloadManager(
     }
 
     //endregion
-
-    private fun updateStatus(download: Download) {
-        logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toPercentage()}")
-    }
 
     //region Series
 
@@ -205,79 +224,17 @@ class DownloadManager(
 
     //region Callbacks
 
-    fun addToCallbacks(callback: DownloadFileUseCaseListener) {
-        synchronized(callbackLock) {
-            if (!callbacks.mapNotNull { it.get() }.contains(callback)) {
-                //            if (!callbacks.contains(callback)) {
-                logger.d(TAG, "Adding Callback: $callback} ${callbacks.size}")
-                callbacks.add(WeakReference(callback))
-            }
-        }
+    private val _state = MutableLiveData<DownloadManagerState>().apply {
+        value = DownloadManagerState.IDLE
     }
 
-    fun removeCallbacks(callback: DownloadFileUseCaseListener) {
-        synchronized(callbackLock) {
-            val iterator = callbacks.iterator()
-            while (iterator.hasNext()) {
-                val call = iterator.next()
-                if (call == callback) {
-                    iterator.remove()
-                    logger.d(TAG, "Removing Callback: $callback} ${callbacks.size}")
-                }
-            }
-        }
-    }
-
-    fun clearAllCallbacks() {
-        synchronized(callbackLock) {
-            callbacks.clear()
-        }
-    }
+    val state: LiveData<DownloadManagerState>
+        get() = _state
 
     //endregion
 
-    fun download(serieToDownload: Serie) {
-        val file = getFile(serieToDownload)
-        val request = Request(serieToDownload.downloadUrl, file.absolutePath).apply {
-            downloadOnEnqueue = true
-            priority = NORMAL
-            networkType = WIFI_ONLY
-            identifier = serieToDownload.id
-
-        }
-        addSerie(request.identifier, serieToDownload)
-
-        fetch.enqueue(request, Func {
-            logger.d(TAG, "Request Enqueued ${it.id} - ${it.identifier}")
-        }, Func {
-            logger.d(TAG, "Request Error: ${it.throwable?.message}")
-        })
-    }
-
-    fun pause(serieId: Long) {
-        fetch.getDownloadsByRequestIdentifier(serieId, Func { downloadList ->
-            logger.d(TAG, "invokePaused: ${downloadList.map { it.id }}")
-            fetch.pause(downloadList.map { it.id })
-        })
-
-    }
-
-    fun resume(serieId: Long) {
-        fetch.getDownloadsByRequestIdentifier(serieId, Func { downloadList ->
-            logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
-            fetch.resume(downloadList.map { it.id })
-        })
-    }
-
-    fun cancel(serieId: Long) {
-        fetch.getDownloadsByRequestIdentifier(serieId, Func { downloadList ->
-            logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
-            fetch.delete(downloadList.map { it.id })
-        })
-    }
-
     //region Files
-
+    //TODO: We can create a FileManager for handling this, instead of some methods here
     private fun removeFile(serie: Serie) {
         val file = getFile(serie)
         val deleted = file.delete()
@@ -289,7 +246,29 @@ class DownloadManager(
         return File(storageDir, "${serie.title}.mp4")
     }
 
+    private fun updateFolder(path: String) {
+        MediaScannerConnection.scanFile(context, Array<String>(1) { path }, null, null)
+    }
+
     //endregion
+
+    private fun updateStatus(download: Download) {
+        logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toPercentage()}")
+    }
+
+    private fun downLoadSerie(serieToDownload: Serie) {
+        val file = getFile(serieToDownload)
+        val request = Request(serieToDownload.downloadUrl, file.absolutePath).apply {
+            downloadOnEnqueue = true
+            priority = NORMAL
+            networkType = WIFI_ONLY
+            identifier = serieToDownload.id
+
+        }
+        addSerie(request.identifier, serieToDownload)
+
+        fetch.enqueue(request)
+    }
 
     interface DownloadFileUseCaseListener {
         fun onSuccess(serieDownloaded: SerieDownloaded) = Unit
@@ -299,6 +278,26 @@ class DownloadManager(
         fun onPaused(serieDownloaded: SerieDownloaded) = Unit
         fun onResumed(serieDownloaded: SerieDownloaded) = Unit
         fun onDeleted(serieDownloaded: SerieDownloaded) = Unit
+    }
+
+    sealed class DownloadManagerState {
+
+        object IDLE : DownloadManagerState()
+
+        class QUEUED(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+
+        class PROGRESS(val serieDownloaded: SerieDownloaded) : DownloadManager.DownloadManagerState()
+
+        class PAUSED(val serieDownloaded: SerieDownloaded) : DownloadManager.DownloadManagerState()
+
+        class RESUMED(val serieDownloaded: SerieDownloaded) : DownloadManager.DownloadManagerState()
+
+        class COMPLETED(val serieDownloaded: SerieDownloaded) : DownloadManager.DownloadManagerState()
+
+        class DELETED(val serieDownloaded: SerieDownloaded) : DownloadManager.DownloadManagerState()
+
+        class ERROR(val serieDownloaded: SerieDownloaded) : DownloadManager.DownloadManagerState()
+
     }
 
 }
