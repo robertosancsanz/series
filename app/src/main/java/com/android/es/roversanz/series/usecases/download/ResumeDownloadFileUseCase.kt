@@ -25,17 +25,17 @@ class ResumeDownloadFileUseCase(private val downloadManager: DownloadManager) : 
         Log.d(TAG, "Resuming ${serie.title} on $this")
 
         callback?.let {
-            if (observer == null) {
+//            if (observer == null) {
                 observer = Observer<DownloadManagerState> { state ->
                     when (state) {
                         is RESUMED -> {
                             it.invoke(state.serieDownloaded)
-                            removeObserver()
+//                            removeObserver()
                         }
                     }
                 }.apply { downloadManager.state.observeForever(this) }
             }
-        }
+//        }
 
         downloadManager.resume(serie.id)
     }
