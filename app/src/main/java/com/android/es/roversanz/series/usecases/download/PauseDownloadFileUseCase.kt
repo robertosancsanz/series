@@ -24,18 +24,18 @@ class PauseDownloadFileUseCase(private val downloadManager: DownloadManager) : U
         Log.d(TAG, "Pausing ${serie.title} on $this")
 
         callback?.let {
-            if (observer == null) {
+//            if (observer == null) {
                 observer = Observer<DownloadManagerState> { state ->
                     when (state) {
                         is PAUSED -> {
                             it.invoke(state.serieDownloaded)
-                            removeObserver()
+//                            removeObserver()
                         }
                     }
                 }.apply { downloadManager.state.observeForever(this) }
 
             }
-        }
+//        }
         downloadManager.pause(serie.id)
     }
 

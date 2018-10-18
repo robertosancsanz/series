@@ -30,7 +30,7 @@ class DownloadFileUseCase(private val downloadManager: DownloadManager) : UseCas
         Log.d(TAG, "Downloading ${serie.title} on $this")
 
         //FIXME: The observable is the same, but in this way, it´s overrinding the callbacks, so losing the first one
-        if (observer == null) {
+//        if (observer == null) {
             observer = Observer<DownloadManagerState> { state ->
                 when (state) {
                     is QUEUED    -> {
@@ -44,17 +44,17 @@ class DownloadFileUseCase(private val downloadManager: DownloadManager) : UseCas
                     is COMPLETED -> {
                         Log.d(TAG, "COMPLETED ${serie.title}")
                         onSuccess.invoke(state.serieDownloaded)
-                        removeObserver()
+//                        removeObserver()
                     }
                     is ERROR     -> {
                         Log.d(TAG, "ERROR ${serie.title}")
                         onError.invoke(state.serieDownloaded)
-                        removeObserver()
+//                        removeObserver()
                     }
                 }
             }.apply { downloadManager.state.observeForever(this) }
 
-        }
+//        }
         downloadManager.download(serie)
     }
 

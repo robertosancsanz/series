@@ -25,7 +25,7 @@ class CancelDownloadFileUseCase(private val downloadManager: DownloadManager) : 
         Log.d(TAG, "Cancelling ${serie.title} on $this")
 
         callback?.let {
-            if (observer == null) {
+//            if (observer == null) {
                 observer = Observer<DownloadManagerState> { state ->
                     when (state) {
                         is DELETED -> {
@@ -36,7 +36,7 @@ class CancelDownloadFileUseCase(private val downloadManager: DownloadManager) : 
                 }.apply { downloadManager.state.observeForever(this) }
 
             }
-        }
+//        }
         downloadManager.cancel(serie.id)
     }
 
