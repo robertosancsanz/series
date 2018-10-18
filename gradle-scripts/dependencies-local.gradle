@@ -23,6 +23,7 @@ def _versions = [
 //        assertj                      : '2.6.0',
 //
         okhttpVersion                : '3.11.0',
+        fetch                        : '2.2.0-RC14'
 //
 //        bootstrap                    : '1.1.0',
 
@@ -82,8 +83,10 @@ def _libraries = [
                 glideCompiler: "com.github.bumptech.glide:compiler:${_versions.glide}"
         ],
         utils       : [
-                stetho    : "com.facebook.stetho:stetho:${_versions.stetho}",
-                leakcanary: "com.squareup.leakcanary:leakcanary-android:${_versions.leakcanary}",
+                stetho     : "com.facebook.stetho:stetho:${_versions.stetho}",
+                leakcanary : "com.squareup.leakcanary:leakcanary-android:${_versions.leakcanary}",
+                fetch      : "com.tonyodev.fetch2:fetch2:${_versions.fetch}",
+                fetchOkHttp: "com.tonyodev.fetch2okhttp:fetch2okhttp:${_versions.fetch}",
         ],
 ]
 
