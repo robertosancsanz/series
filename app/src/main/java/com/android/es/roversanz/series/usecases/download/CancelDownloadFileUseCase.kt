@@ -30,7 +30,7 @@ class CancelDownloadFileUseCase(private val downloadManager: DownloadManager) : 
                     when (state) {
                         is DELETED -> {
                             it.invoke(state.serieDownloaded)
-                            removeObserver()
+//                            removeObserver()
                         }
                     }
                 }.apply { downloadManager.state.observeForever(this) }

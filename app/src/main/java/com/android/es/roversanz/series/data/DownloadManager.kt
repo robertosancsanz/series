@@ -2,13 +2,12 @@ package com.android.es.roversanz.series.data
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.content.Context
-import android.media.MediaScannerConnection
 import android.os.Environment
 import android.util.Log
 import com.android.es.roversanz.series.R
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
+import com.android.es.roversanz.series.utils.FileUtil
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import com.android.es.roversanz.series.utils.toPercentage
@@ -21,11 +20,10 @@ import com.tonyodev.fetch2.Priority.NORMAL
 import com.tonyodev.fetch2.Request
 import com.tonyodev.fetch2core.DownloadBlock
 import com.tonyodev.fetch2core.Func
-import java.io.File
 
 @Suppress("LargeClass")
 class DownloadManager(
-        private val context: Context,
+        private val fileUtil: FileUtil,
         private val logger: Logger,
         private val fetch: Fetch,
         private val resourceProvider: ResourceProvider) : FetchListener {
@@ -149,9 +147,9 @@ class DownloadManager(
     override fun onCompleted(download: Download) {
         updateStatus(download)
         getSerie(download.request.identifier)?.let { serie ->
-            val file = getFile(serie)
+            val file = fileUtil.createFile(serie)
+            fileUtil.updateFolder(file.path)
             logger.d(TAG, "onCompleted: ${download.id} -- ${serie.title}")
-            updateFolder(file.path)
             _state.postValue(DownloadManagerState.COMPLETED(
                     SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(),
                                     filePath = file.absolutePath)))
@@ -172,7 +170,7 @@ class DownloadManager(
         updateStatus(download)
         fetch.remove(download.id)
         getSerie(download.request.identifier)?.let { serie ->
-            removeFile(serie)
+            fileUtil.removeFile(serie)
             _state.postValue(DownloadManagerState.DELETED(SerieDownloaded(serie = serie, state = download.status.name)))
             removeSerie(download.request.identifier)
         }
@@ -183,7 +181,7 @@ class DownloadManager(
         //Maybe we don´t want to remove this download, for future tries
         fetch.remove(download.id)
         getSerie(download.request.identifier)?.let { serie ->
-            removeFile(serie)
+            fileUtil.removeFile(serie)
             val message = error.throwable?.message
                           ?: resourceProvider.getString(R.string.error_general)
             logger.d(TAG, "onError: ${download.id} -- ${serie.title}")
@@ -233,31 +231,12 @@ class DownloadManager(
 
     //endregion
 
-    //region Files
-    //TODO: We can create a FileManager for handling this, instead of some methods here
-    private fun removeFile(serie: Serie) {
-        val file = getFile(serie)
-        val deleted = file.delete()
-        logger.d(TAG, "Removing File: ${file.absoluteFile} $deleted")
-    }
-
-    private fun getFile(serie: Serie): File {
-        val storageDir = File(Environment.getExternalStoragePublicDirectory(PATH), DIRECTORY).apply { mkdirs() }
-        return File(storageDir, "${serie.title}.mp4")
-    }
-
-    private fun updateFolder(path: String) {
-        MediaScannerConnection.scanFile(context, Array<String>(1) { path }, null, null)
-    }
-
-    //endregion
-
     private fun updateStatus(download: Download) {
         logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toPercentage()}")
     }
 
     private fun downLoadSerie(serieToDownload: Serie) {
-        val file = getFile(serieToDownload)
+        val file = fileUtil.createFile(serieToDownload)
         val request = Request(serieToDownload.downloadUrl, file.absolutePath).apply {
             downloadOnEnqueue = true
             priority = NORMAL
@@ -301,3 +280,5 @@ class DownloadManager(
     }
 
 }
+
+

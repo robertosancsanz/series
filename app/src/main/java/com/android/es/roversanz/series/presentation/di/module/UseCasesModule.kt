@@ -10,6 +10,7 @@ import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCa
 import com.android.es.roversanz.series.usecases.provider.SchedulersProvider
 import com.android.es.roversanz.series.usecases.series.GetSerieDetailUseCase
 import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
+import com.android.es.roversanz.series.utils.FileUtil
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import com.android.es.roversanz.series.utils.provider.SchedulersProviderImpl
@@ -63,15 +64,22 @@ class UseCasesModule {
 
     @Provides
     @Singleton
+    internal fun provideFileUtil(ctx: Context,
+                                 logger: Logger): FileUtil = FileUtil(ctx, logger)
+
+    @Provides
+    @Singleton
     internal fun provideDownloadManager(
             ctx: Context,
             okHttpClient: OkHttpClient,
             logger: Logger,
+            fileUtil: FileUtil,
             resourceProvider: ResourceProvider): DownloadManager {
         val fetchConfiguration = FetchConfiguration.Builder(ctx)
                 .setDownloadConcurrentLimit(1)
                 .setGlobalNetworkType(NetworkType.WIFI_ONLY)
                 .setHttpDownloader(OkHttpDownloader(okHttpClient))
+                .setProgressReportingInterval(500)
                 .setNamespace("SERIES")
                 .enableRetryOnNetworkGain(true)
                 .build()
@@ -85,7 +93,7 @@ class UseCasesModule {
             removeAll()
         }
 
-        return DownloadManager(ctx, logger, fetch, resourceProvider)
+        return DownloadManager(fileUtil, logger, fetch, resourceProvider)
     }
 
     @Provides
