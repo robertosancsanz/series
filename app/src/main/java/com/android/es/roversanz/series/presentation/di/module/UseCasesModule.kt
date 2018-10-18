@@ -1,6 +1,7 @@
 package com.android.es.roversanz.series.presentation.di.module
 
 import android.content.Context
+import android.os.Environment
 import com.android.es.roversanz.series.data.DownloadManager
 import com.android.es.roversanz.series.data.SerieRepository
 import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
@@ -54,9 +55,6 @@ class UseCasesModule {
         retryOnConnectionFailure(true)
         readTimeout(READ_TIMEOUT.toLong(), TimeUnit.SECONDS)
         connectTimeout(CONNECT_TIMEOUT.toLong(), TimeUnit.SECONDS)
-        //cookieJar(JavaNetCookieJar(CookieHandler.setDefault(CookieManager().apply {
-        //  setCookiePolicy(CookiePolicy.ACCEPT_ALL)
-        //})))
         networkInterceptors().add(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BASIC
         })
@@ -65,7 +63,8 @@ class UseCasesModule {
     @Provides
     @Singleton
     internal fun provideFileUtil(ctx: Context,
-                                 logger: Logger): FileUtil = FileUtil(ctx, logger)
+                                 logger: Logger): FileUtil
+            = FileUtil(ctx, logger, Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath)
 
     @Provides
     @Singleton
