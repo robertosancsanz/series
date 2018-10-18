@@ -1,22 +1,21 @@
 package com.android.es.roversanz.series.utils
 
 import android.content.Context
-import android.os.Environment
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.utils.logger.Logger
 import java.io.File
 
 class FileUtil(private val context: Context,
-               private val logger: Logger) {
+               private val logger: Logger,
+               val path: String) {
 
     companion object {
         private const val TAG: String = "DOWNLOADED"
-        private val PATH: String = Environment.DIRECTORY_DOWNLOADS
         private const val DIRECTORY = "Series/"
     }
 
     fun createFile(serie: Serie): File {
-        val storageDir = File(Environment.getExternalStoragePublicDirectory(PATH), DIRECTORY).apply { mkdirs() }
+        val storageDir = File(path, DIRECTORY).apply { mkdirs() }
         return File(storageDir, "${serie.title}.mp4")
     }
 

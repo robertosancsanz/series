@@ -36,8 +36,12 @@ class DownloadManager(
 
     private val seriesMap = mutableMapOf<Long, Serie>()
     private val serieLock = Any()
-//    private var callbacks = mutableListOf<WeakReference<DownloadFileUseCaseListener>>()
-//    private val callbackLock = Any()
+
+    private val _state = MutableLiveData<DownloadManagerState>().apply {
+        value = DownloadManagerState.IDLE
+    }
+    val state: LiveData<DownloadManagerState>
+        get() = _state
 
     init {
         fetch.addListener(this)
@@ -220,17 +224,6 @@ class DownloadManager(
 
     //endregion
 
-    //region Callbacks
-
-    private val _state = MutableLiveData<DownloadManagerState>().apply {
-        value = DownloadManagerState.IDLE
-    }
-
-    val state: LiveData<DownloadManagerState>
-        get() = _state
-
-    //endregion
-
     private fun updateStatus(download: Download) {
         logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toPercentage()}")
     }
@@ -247,16 +240,6 @@ class DownloadManager(
         addSerie(request.identifier, serieToDownload)
 
         fetch.enqueue(request)
-    }
-
-    interface DownloadFileUseCaseListener {
-        fun onSuccess(serieDownloaded: SerieDownloaded) = Unit
-        fun onError(serieDownloaded: SerieDownloaded) = Unit
-        fun onQueued(serieDownloaded: SerieDownloaded) = Unit
-        fun onProgress(serieDownloaded: SerieDownloaded) = Unit
-        fun onPaused(serieDownloaded: SerieDownloaded) = Unit
-        fun onResumed(serieDownloaded: SerieDownloaded) = Unit
-        fun onDeleted(serieDownloaded: SerieDownloaded) = Unit
     }
 
     sealed class DownloadManagerState {
