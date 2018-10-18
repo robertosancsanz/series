@@ -1,6 +1,7 @@
 package com.android.es.roversanz.series.utils
 
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
 import android.view.View
@@ -9,6 +10,10 @@ import android.widget.Toast
 fun Int.toPercentage(): String = "${String.format("%.2f", if (this >= 0) this.toDouble() / 100 else 0.0)}%"
 
 fun Context.toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+fun Context.updateMedia(path:String){
+    MediaScannerConnection.scanFile(this, Array(1) { path }, null, null)
+}
 
 inline fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG, f: Snackbar.() -> Unit)
         = snack(resources.getString(messageRes), length, f)
