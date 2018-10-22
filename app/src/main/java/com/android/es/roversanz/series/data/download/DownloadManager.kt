@@ -54,18 +54,12 @@ class DownloadManager(
     //region Operations
 
     fun download(serie: Serie) {
+        logger.d(TAG, "download: ${serie.title}")
         fetch.getDownloadsByRequestIdentifier(serie.id.toLong(), Func { downloadList ->
-            if (downloadList.isNotEmpty()) {
-                logger.d(TAG, "invokeRemoving: ${downloadList.map { it.id }}")
-                fetch.remove(downloadList.map { it.id }, Func {
-                    logger.d(TAG, "Requests Removed ${it.map { down -> down.request.id }}")
-                    downLoadSerie(serie)
-                }, Func {
-                    logger.d(TAG, "Failed to remove Requests ${it.throwable?.message}")
-                    downLoadSerie(serie)
-                })
-            } else {
+            if (downloadList.isEmpty()) {
                 downLoadSerie(serie)
+            } else {
+                logger.d(TAG, "${downloadList.map { it.extras.map[DownloadService.FIELD_TITLE] }} is already downloading")
             }
         })
     }
@@ -185,7 +179,7 @@ class DownloadManager(
         logger.d(TAG, "onCompleted: ${download.id}")
         _state.postValue(COMPLETED(
                 SerieDownloaded(serie = serie, state = download.status.name,
-                                progress = download.progress.toStringPercentage(), filePath = file?.absolutePath)))
+                        progress = download.progress.toStringPercentage(), filePath = file?.absolutePath)))
     }
 
     override fun onCancelled(download: Download) {
@@ -228,7 +222,7 @@ class DownloadManager(
         )
         fileUtil.removeFile(serie.title)
         val message = error.throwable?.message
-                      ?: resourceProvider.getString(R.string.error_general)
+                ?: resourceProvider.getString(R.string.error_general)
         logger.d(TAG, "onError: ${download.id}")
         _state.postValue(ERROR(
                 SerieDownloaded(serie = serie, state = download.status.name, error = message, progress = download.progress.toStringPercentage())))
@@ -247,7 +241,7 @@ class DownloadManager(
 
     private fun updateStatus(download: Download) {
         logger.d(TAG, "${download.request.identifier}:${download.extras.map[DownloadService.FIELD_TITLE]} is ${download.status} " +
-                      "Progress: ${download.progress.toStringPercentage()}")
+                "Progress: ${download.progress.toStringPercentage()}")
     }
 
     private fun downLoadSerie(serie: Serie) {
