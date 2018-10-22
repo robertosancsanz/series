@@ -18,16 +18,22 @@ android {
     }
 
     buildTypes {
+
+
         debug {
             debuggable true
             applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
-
+            it.buildConfigField 'String', 'CHANNEL_ID', channelId
+            it.buildConfigField 'String', 'CHANNEL_NAME', channelName
         }
         release {
             debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            it.buildConfigField 'String', 'CHANNEL_ID', channelId
+            it.buildConfigField 'String', 'CHANNEL_NAME', channelName
+
         }
     }
 

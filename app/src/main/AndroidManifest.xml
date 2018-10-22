@@ -33,6 +33,9 @@
 
         </service>
 
+        <receiver android:name=".data.download.DownloadBroadcastReceiver">
+        </receiver>
+
     </application>
 
 </manifest>

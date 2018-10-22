@@ -11,7 +11,7 @@ import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
 import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.download.ResumeDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
-import com.android.es.roversanz.series.utils.toPercentage
+import com.android.es.roversanz.series.utils.toStringPercentage
 
 class SeriesDetailViewModel(private val useCaseDownload: DownloadFileUseCase,
                             private val useCasePauseDownload: PauseDownloadFileUseCase,
@@ -48,7 +48,7 @@ class SeriesDetailViewModel(private val useCaseDownload: DownloadFileUseCase,
 
 
     private fun onQueued(serieDownloaded: SerieDownloaded) {
-        _state.postValue(SeriesDetailState.DOWNLOADING(0.toPercentage()))
+        _state.postValue(SeriesDetailState.DOWNLOADING(0.toStringPercentage()))
     }
 
     private fun onProgress(serieDownloaded: SerieDownloaded) {

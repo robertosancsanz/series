@@ -7,7 +7,6 @@ import com.android.es.roversanz.series.R.string
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.COMPLETED
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.DELETED
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.ERROR
-import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.IDLE
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.PAUSED
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.PROGRESS
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.QUEUED
@@ -17,7 +16,7 @@ import com.android.es.roversanz.series.usecases.series.SerieDownloaded
 import com.android.es.roversanz.series.utils.FileUtil
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
-import com.android.es.roversanz.series.utils.toPercentage
+import com.android.es.roversanz.series.utils.toStringPercentage
 import com.tonyodev.fetch2.Download
 import com.tonyodev.fetch2.Error
 import com.tonyodev.fetch2.Fetch
@@ -44,7 +43,7 @@ class DownloadManager(
     private val serieLock = Any()
 
     private val _state = MutableLiveData<DownloadManagerState>().apply {
-        value = IDLE
+        //        value = IDLE
     }
     val state: LiveData<DownloadManagerState>
         get() = _state
@@ -148,7 +147,7 @@ class DownloadManager(
                     downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
             )
             _state.postValue(QUEUED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
         }
     }
 
@@ -168,12 +167,12 @@ class DownloadManager(
                     downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
             )
             _state.postValue(PROGRESS(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
         }
     }
 
     override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
-
+        updateStatus(download)
     }
 
     override fun onPaused(download: Download) {
@@ -188,7 +187,7 @@ class DownloadManager(
                     downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
             )
             _state.postValue(PAUSED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
         }
     }
 
@@ -204,7 +203,7 @@ class DownloadManager(
                     downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
             )
             _state.postValue(RESUMED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage())))
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
         }
     }
 
@@ -223,7 +222,7 @@ class DownloadManager(
             fileUtil.updateFolder(file?.path)
             logger.d(TAG, "onCompleted: ${download.id}")
             _state.postValue(COMPLETED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toPercentage(), filePath = file?.absolutePath)))
+                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage(), filePath = file?.absolutePath)))
             removeSerie(download.request.identifier)
         }
     }
@@ -274,7 +273,7 @@ class DownloadManager(
             logger.d(TAG, "onError: ${download.id}")
             _state.postValue(ERROR(
                     SerieDownloaded(serie = serie, state = download.status.name, error = message,
-                                    progress = download.progress.toPercentage())))
+                                    progress = download.progress.toStringPercentage())))
             removeSerie(download.request.identifier)
         }
     }
@@ -315,7 +314,7 @@ class DownloadManager(
     //endregion
 
     private fun updateStatus(download: Download) {
-        logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toPercentage()}")
+        logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toStringPercentage()}")
     }
 
     private fun downLoadSerie(serie: Serie) {
@@ -355,23 +354,23 @@ class DownloadManager(
 //        fetch.enqueue(request)
 //    }
 
-    sealed class DownloadManagerState {
+    sealed class DownloadManagerState(val serieDownloaded: SerieDownloaded) {
 
-        object IDLE : DownloadManagerState()
+//        object IDLE : DownloadManagerState(Seri)
 
-        class QUEUED(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class QUEUED(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
-        class PROGRESS(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class PROGRESS(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
-        class PAUSED(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class PAUSED(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
-        class RESUMED(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class RESUMED(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
-        class COMPLETED(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class COMPLETED(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
-        class DELETED(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class DELETED(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
-        class ERROR(val serieDownloaded: SerieDownloaded) : DownloadManagerState()
+        class ERROR(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 
     }
 

@@ -1,5 +1,6 @@
 package com.android.es.roversanz.series.presentation.di.components
 
+import android.app.NotificationManager
 import android.content.Context
 import com.android.es.roversanz.series.data.SerieRepository
 import com.android.es.roversanz.series.data.download.DownloadManager
@@ -16,6 +17,7 @@ import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import dagger.Component
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
@@ -26,6 +28,8 @@ interface MainComponent {
     fun provideContext(): Context
 
     fun provideResourceProvider(): ResourceProvider
+
+    fun provideNotificationManager(): NotificationManager
 
     fun provideLogger(): Logger
 

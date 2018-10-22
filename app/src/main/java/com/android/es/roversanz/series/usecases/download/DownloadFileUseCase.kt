@@ -6,7 +6,6 @@ import android.app.job.JobScheduler
 import android.arch.lifecycle.Observer
 import android.content.ComponentName
 import android.os.PersistableBundle
-import android.util.Log
 import com.android.es.roversanz.series.data.download.DownloadManager
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.COMPLETED
@@ -36,40 +35,26 @@ class DownloadFileUseCase(private val downloadManager: DownloadManager,
             onQueued: ((SerieDownloaded) -> Unit)? = null,
             onProgress: ((SerieDownloaded) -> Unit)? = null) {
 
-
-        val builder = JobInfo.Builder(jobScheduler?.allPendingJobs?.size ?: 1, componentName)
-                .setRequiredNetworkType(NETWORK_TYPE_ANY)
-                .setExtras(PersistableBundle().apply {
-                    putInt(DownloadService.FIELD_ID, serie.id)
-                    putString(DownloadService.FIELD_TITLE, serie.title)
-                    putString(DownloadService.FIELD_SUBTITLE, serie.subtitle)
-                    putString(DownloadService.FIELD_DESCRIPTION, serie.description)
-                    putString(DownloadService.FIELD_PICTURE, serie.picture)
-                    putString(DownloadService.FIELD_URL, serie.downloadUrl)
-                })
-
-        jobScheduler?.schedule(builder.build())
-
         //Log.d(TAG, "Downloading ${serie.title} on $this")
 //        //FIXME: The observable is the same, but in this way, it´s overrinding the callbacks, so losing the first one
 ////        if (observer == null) {
         observer = Observer<DownloadManagerState> { state ->
             when (state) {
                 is QUEUED    -> {
-                    Log.d(TAG, "Queued ${serie.title}")
+//                    Log.d(TAG, "Queued ${serie.title}")
                     onQueued?.invoke(state.serieDownloaded)
                 }
                 is PROGRESS  -> {
-                    Log.d(TAG, "PROGRESS ${serie.title}")
+//                    Log.d(TAG, "PROGRESS ${serie.title}")
                     onProgress?.invoke(state.serieDownloaded)
                 }
                 is COMPLETED -> {
-                    Log.d(TAG, "COMPLETED ${serie.title}")
+//                    Log.d(TAG, "COMPLETED ${serie.title}")
                     onSuccess.invoke(state.serieDownloaded)
 //                        removeObserver()
                 }
                 is ERROR     -> {
-                    Log.d(TAG, "ERROR ${serie.title}")
+//                    Log.d(TAG, "ERROR ${serie.title}")
                     onError.invoke(state.serieDownloaded)
 //                        removeObserver()
                 }
@@ -78,6 +63,17 @@ class DownloadFileUseCase(private val downloadManager: DownloadManager,
 //
 ////        }
 
+        //Start download
+        jobScheduler?.schedule(JobInfo.Builder(jobScheduler.allPendingJobs.size, componentName)
+                                       .setRequiredNetworkType(NETWORK_TYPE_ANY)
+                                       .setExtras(PersistableBundle().apply {
+                                           putInt(DownloadService.FIELD_ID, serie.id)
+                                           putString(DownloadService.FIELD_TITLE, serie.title)
+                                           putString(DownloadService.FIELD_SUBTITLE, serie.subtitle)
+                                           putString(DownloadService.FIELD_DESCRIPTION, serie.description)
+                                           putString(DownloadService.FIELD_PICTURE, serie.picture)
+                                           putString(DownloadService.FIELD_URL, serie.downloadUrl)
+                                       }).build())
     }
 
 
