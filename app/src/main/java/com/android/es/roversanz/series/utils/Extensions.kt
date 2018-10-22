@@ -7,7 +7,9 @@ import android.widget.Toast
 fun Int.toStringPercentage(): String = "${String.format("%.2f", if (this >= 0) this.toDouble() / 100 else 0.0)}%"
 
 fun String?.toIntPercentage(): Int {
-    val percentage = (this?.substringBefore("%")?.toDouble() ?: 0.0)
+    val percentage = (this?.substringBefore("%")
+                              ?.replace(",", ".")
+                              ?.toDouble() ?: 0.0)
     return (percentage * 100).toInt()
 }
 

@@ -2,7 +2,16 @@ package com.android.es.roversanz.series.presentation.ui.detail
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModel
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.COMPLETED
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.DELETED
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.ERROR
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.PAUSED
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.PROGRESS
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.QUEUED
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.RESUMED
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.CHECKPERMISSION
 import com.android.es.roversanz.series.presentation.ui.detail.SeriesDetailState.DOWNLOADED
@@ -26,22 +35,39 @@ class SeriesDetailViewModel(private val useCaseDownload: DownloadFileUseCase,
     val state: LiveData<SeriesDetailState>
         get() = _state
 
+    private val observer: Observer<DownloadManagerState> = Observer { state ->
+        when (state) {
+            is QUEUED    -> onQueued(state.serieDownloaded)
+            is PROGRESS  -> onProgress(state.serieDownloaded)
+            is COMPLETED -> onSuccess(state.serieDownloaded)
+            is RESUMED   -> onResumed(state.serieDownloaded)
+            is PAUSED    -> onPaused(state.serieDownloaded)
+            is ERROR     -> onError(state.serieDownloaded)
+            is DELETED   -> onDeleted(state.serieDownloaded)
+        }
+    }
 
     init {
+        useCaseDownload.state.observeForever(observer)
         _state.postValue(SeriesDetailState.DONE(serie))
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        useCaseDownload.state.removeObserver(observer)
+    }
+
     fun downloadChapter() = when (_state.value) {
-        SeriesDetailState.PAUSED          -> useCaseResumeDownload(serie, ::onResumed)
-        is SeriesDetailState.DOWNLOADING  -> useCasePauseDownload(serie, ::onPaused)
+        SeriesDetailState.PAUSED          -> useCaseResumeDownload(serie)
+        is SeriesDetailState.DOWNLOADING  -> useCasePauseDownload(serie)
         is SeriesDetailState.DOWNLOADED   -> _state.postValue(DOWNLOADED(serie.file))
-        SeriesDetailState.CHECKPERMISSION -> useCaseDownload(serie, ::onSuccess, ::onError, ::onQueued, ::onProgress)
+        SeriesDetailState.CHECKPERMISSION -> useCaseDownload(serie)
         else                              -> _state.postValue(CHECKPERMISSION)
     }
 
 
     fun cancelDownloadChapter() {
-        useCaseCancelDownload(serie, ::onDeleted)
+        useCaseCancelDownload(serie)
     }
 
     //region Download
