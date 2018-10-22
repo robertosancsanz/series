@@ -31,16 +31,16 @@ class DownloadBroadcastReceiver : BroadcastReceiver() {
         context?.app()?.let { inject(it) }
         intent?.let {
             when (it.action) {
-                PAUSED::class.java.canonicalName  -> it.extras?.getInt(FIELD_ID)?.let { serieId -> pause(serieId) }
-                RESUMED::class.java.canonicalName -> it.extras?.getInt(FIELD_ID)?.let { serieId -> resume(serieId) }
-                DELETED::class.java.canonicalName -> it.extras?.getInt(FIELD_ID)?.let { serieId -> cancel(serieId) }
+                PAUSED::class.java.simpleName  -> it.extras?.getInt(FIELD_ID)?.let { serieId -> pause(serieId) }
+                RESUMED::class.java.simpleName -> it.extras?.getInt(FIELD_ID)?.let { serieId -> resume(serieId) }
+                DELETED::class.java.simpleName -> it.extras?.getInt(FIELD_ID)?.let { serieId -> cancel(serieId) }
                 else                              -> logger.d(TAG, "Unkown action: ${intent.action}")
             }
         }
     }
 
     private fun resume(serieId: Int) {
-        logger.d(TAG, "Pause $serieId")
+        logger.d(TAG, "Resume $serieId")
         downloadManager.resume(serieId)
     }
 

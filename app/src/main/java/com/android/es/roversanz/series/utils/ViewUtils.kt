@@ -26,7 +26,8 @@ fun View.setVisibility(visibility: Boolean) {
     }
 }
 
-inline fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG, f: Snackbar.() -> Unit) = snack(resources.getString(messageRes), length, f)
+inline fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG, f: Snackbar.() -> Unit)
+        = snack(resources.getString(messageRes), length, f)
 
 fun View.snack(@StringRes messageRes: Int, length: Int = Snackbar.LENGTH_LONG) = snack(resources.getString(messageRes), length)
 

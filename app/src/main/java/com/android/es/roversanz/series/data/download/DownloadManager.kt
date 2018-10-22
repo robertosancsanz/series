@@ -2,8 +2,7 @@ package com.android.es.roversanz.series.data.download
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.util.Log
-import com.android.es.roversanz.series.R.string
+import com.android.es.roversanz.series.R
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.COMPLETED
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.DELETED
 import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.ERROR
@@ -36,11 +35,11 @@ class DownloadManager(
         private val resourceProvider: ResourceProvider) : FetchListener {
 
     companion object {
-        private const val TAG: String = "DOWNLOADED"
+        private val TAG: String = DownloadManager::class.java.simpleName
     }
 
-    private val seriesMap = mutableMapOf<Long, Int>()
-    private val serieLock = Any()
+//    private val seriesMap = mutableMapOf<Long, Int>()
+//    private val serieLock = Any()
 
     private val _state = MutableLiveData<DownloadManagerState>().apply {
         //        value = IDLE
@@ -55,64 +54,35 @@ class DownloadManager(
     //region Operations
 
     fun download(serie: Serie) {
-        if (!seriesMap.contains(serie.id.toLong())) {
-            fetch.getDownloadsByRequestIdentifier(serie.id.toLong(), Func { downloadList ->
-                if (downloadList.isNotEmpty()) {
-                    logger.d(TAG, "invokeRemoving: ${downloadList.map { it.id }}")
-                    fetch.remove(downloadList.map { it.id }, Func {
-                        logger.d(TAG, "Requests Removed ${it.map { down -> down.request.id }}")
-                        downLoadSerie(serie)
-                    }, Func {
-                        logger.d(TAG, "Failed to remove Requests ${it.throwable?.message}")
-                        downLoadSerie(serie)
-                    })
-                } else {
+        fetch.getDownloadsByRequestIdentifier(serie.id.toLong(), Func { downloadList ->
+            if (downloadList.isNotEmpty()) {
+                logger.d(TAG, "invokeRemoving: ${downloadList.map { it.id }}")
+                fetch.remove(downloadList.map { it.id }, Func {
+                    logger.d(TAG, "Requests Removed ${it.map { down -> down.request.id }}")
                     downLoadSerie(serie)
-
-                }
-            })
-        } else {
-            Log.d(TAG, "Serie ${serie.title} is already downloading")
-        }
+                }, Func {
+                    logger.d(TAG, "Failed to remove Requests ${it.throwable?.message}")
+                    downLoadSerie(serie)
+                })
+            } else {
+                downLoadSerie(serie)
+            }
+        })
     }
-
-//    fun download(serieToDownload: Serie) {
-//
-//        if (!seriesMap.contains(serieToDownload.id.toLong())) {
-//            fetch.getDownloadsByRequestIdentifier(serieToDownload.id.toLong(), Func { downloadList ->
-//
-//                if (downloadList.isNotEmpty()) {
-//                    logger.d(TAG, "invokeRemoving: ${downloadList.map { it.id }}")
-//                    fetch.remove(downloadList.map { it.id }, Func {
-//                        logger.d(TAG, "Requests Removed ${it.map { down -> down.request.id }}")
-//                        downLoadSerie(serieToDownload)
-//                    }, Func {
-//                        logger.d(TAG, "Failed to remove Requests ${it.throwable?.message}")
-//                        downLoadSerie(serieToDownload)
-//                    })
-//                } else {
-//                    downLoadSerie(serieToDownload)
-//                }
-//            })
-//        } else {
-//            Log.d(TAG, "Serie ${serieToDownload.title} is already downloading")
-//        }
-//    }
 
     fun pause(serieId: Int) {
         fetch.getDownloadsByRequestIdentifier(serieId.toLong(), Func { downloadList ->
             if (downloadList.isNotEmpty()) {
-                logger.d(TAG, "invokePaused: ${downloadList.map { it.id }}")
+                logger.d(TAG, "invokePaused: ${downloadList.map { it.extras.map[DownloadService.FIELD_TITLE] }}")
                 fetch.pause(downloadList.map { it.id })
             }
         })
-
     }
 
     fun resume(serieId: Int) {
         fetch.getDownloadsByRequestIdentifier(serieId.toLong(), Func { downloadList ->
             if (downloadList.isNotEmpty()) {
-                logger.d(TAG, "invokeResume: ${downloadList.map { it.id }}")
+                logger.d(TAG, "invokeResume: ${downloadList.map { it.extras.map[DownloadService.FIELD_TITLE] }}")
                 fetch.resume(downloadList.map { it.id })
             }
         })
@@ -121,7 +91,7 @@ class DownloadManager(
     fun cancel(serieId: Int) {
         fetch.getDownloadsByRequestIdentifier(serieId.toLong(), Func { downloadList ->
             if (downloadList.isNotEmpty()) {
-                logger.d(TAG, "invokeCancel: ${downloadList.map { it.id }}")
+                logger.d(TAG, "invokeCancel: ${downloadList.map { it.extras.map[DownloadService.FIELD_TITLE] }}")
                 fetch.delete(downloadList.map { it.id })
             }
         })
@@ -137,18 +107,17 @@ class DownloadManager(
 
     override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
         updateStatus(download)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            _state.postValue(QUEUED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
-        }
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        _state.postValue(QUEUED(
+                SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
+
     }
 
     override fun onStarted(download: Download, downloadBlocks: List<DownloadBlock>, totalBlocks: Int) {
@@ -157,18 +126,16 @@ class DownloadManager(
 
     override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
         updateStatus(download)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            _state.postValue(PROGRESS(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
-        }
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        _state.postValue(PROGRESS(
+                SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
     }
 
     override fun onDownloadBlockUpdated(download: Download, downloadBlock: DownloadBlock, totalBlocks: Int) {
@@ -177,54 +144,48 @@ class DownloadManager(
 
     override fun onPaused(download: Download) {
         updateStatus(download)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            _state.postValue(PAUSED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
-        }
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        _state.postValue(PAUSED(
+                SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
     }
 
     override fun onResumed(download: Download) {
         updateStatus(download)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            _state.postValue(RESUMED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
-        }
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        _state.postValue(RESUMED(
+                SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage())))
     }
 
     override fun onCompleted(download: Download) {
         updateStatus(download)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            val file = download.request.extras.map["title"]?.let { fileUtil.createFile(it) }
-            fileUtil.updateFolder(file?.path)
-            logger.d(TAG, "onCompleted: ${download.id}")
-            _state.postValue(COMPLETED(
-                    SerieDownloaded(serie = serie, state = download.status.name, progress = download.progress.toStringPercentage(), filePath = file?.absolutePath)))
-            removeSerie(download.request.identifier)
-        }
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        val file = download.request.extras.map["title"]?.let { fileUtil.createFile(it) }
+        fileUtil.updateFolder(file?.path)
+        logger.d(TAG, "onCompleted: ${download.id}")
+        _state.postValue(COMPLETED(
+                SerieDownloaded(serie = serie, state = download.status.name,
+                                progress = download.progress.toStringPercentage(), filePath = file?.absolutePath)))
     }
 
     override fun onCancelled(download: Download) {
@@ -239,82 +200,54 @@ class DownloadManager(
     override fun onDeleted(download: Download) {
         updateStatus(download)
         fetch.remove(download.id)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            fileUtil.removeFile(serie.title)
-            _state.postValue(DELETED(SerieDownloaded(serie = serie, state = download.status.name)))
-            removeSerie(download.request.identifier)
-        }
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        fileUtil.removeFile(serie.title)
+        _state.postValue(DELETED(SerieDownloaded(serie = serie, state = download.status.name)))
+
     }
 
     override fun onError(download: Download, error: Error, throwable: Throwable?) {
         updateStatus(download)
         //Maybe we don´t want to remove this download, for future tries
         fetch.remove(download.id)
-        getSerie(download.request.identifier)?.let { serieId ->
-            val serie = Serie(
-                    id = serieId,
-                    title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
-                    subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
-                    description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
-                    picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
-                    downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
-            )
-            fileUtil.removeFile(serie.title)
-            val message = error.throwable?.message
-                          ?: resourceProvider.getString(string.error_general)
-            logger.d(TAG, "onError: ${download.id}")
-            _state.postValue(ERROR(
-                    SerieDownloaded(serie = serie, state = download.status.name, error = message,
-                                    progress = download.progress.toStringPercentage())))
-            removeSerie(download.request.identifier)
-        }
+
+        val serie = Serie(
+                id = download.request.identifier.toInt(),
+                title = download.extras.map[DownloadService.FIELD_TITLE].orEmpty(),
+                subtitle = download.extras.map[DownloadService.FIELD_SUBTITLE].orEmpty(),
+                description = download.extras.map[DownloadService.FIELD_DESCRIPTION].orEmpty(),
+                picture = download.extras.map[DownloadService.FIELD_PICTURE].orEmpty(),
+                downloadUrl = download.extras.map[DownloadService.FIELD_URL].orEmpty()
+        )
+        fileUtil.removeFile(serie.title)
+        val message = error.throwable?.message
+                      ?: resourceProvider.getString(R.string.error_general)
+        logger.d(TAG, "onError: ${download.id}")
+        _state.postValue(ERROR(
+                SerieDownloaded(serie = serie, state = download.status.name, error = message, progress = download.progress.toStringPercentage())))
     }
 
     override fun onWaitingNetwork(download: Download) {
         updateStatus(download)
     }
 
-    //endregion
+//endregion
 
     //region Series
 
-    private fun addSerie(identifier: Long, serieId: Int) {
-        synchronized(serieLock) {
-            seriesMap[identifier] = serieId
-        }
-    }
-
-//    private fun addSerie(identifier: Long, serie: Serie) {
-//        synchronized(serieLock) {
-//            seriesMap[identifier] = serie
-//        }
-//    }
-
-    private fun getSerie(identifier: Long): Int? {
-        synchronized(serieLock) {
-            return seriesMap[identifier]
-        }
-    }
-
-    private fun removeSerie(identifier: Long) {
-        synchronized(serieLock) {
-            seriesMap.remove(identifier)
-            logger.d(TAG, "Removing Serie")
-        }
-    }
 
     //endregion
 
     private fun updateStatus(download: Download) {
-        logger.d(TAG, "${download.id} is ${download.status} Progress: ${download.progress.toStringPercentage()}")
+        logger.d(TAG, "${download.request.identifier}:${download.extras.map[DownloadService.FIELD_TITLE]} is ${download.status} " +
+                      "Progress: ${download.progress.toStringPercentage()}")
     }
 
     private fun downLoadSerie(serie: Serie) {
@@ -334,29 +267,11 @@ class DownloadManager(
             })
         }
 
-        addSerie(request.identifier, serie.id)
-
-
         fetch.enqueue(request)
 
     }
 
-//    private fun downLoadSerie(serieToDownload: Serie) {
-//        val file = fileUtil.createFile(serieToDownload)
-//        val request = Request(serieToDownload.downloadUrl, file.absolutePath).apply {
-//            downloadOnEnqueue = true
-//            priority = NORMAL
-//            networkType = WIFI_ONLY
-//            identifier = serieToDownload.id.toLong()
-//        }
-//        addSerie(request.identifier, serieToDownload)
-//
-//        fetch.enqueue(request)
-//    }
-
     sealed class DownloadManagerState(val serieDownloaded: SerieDownloaded) {
-
-//        object IDLE : DownloadManagerState(Seri)
 
         class QUEUED(serieDownloaded: SerieDownloaded) : DownloadManagerState(serieDownloaded)
 

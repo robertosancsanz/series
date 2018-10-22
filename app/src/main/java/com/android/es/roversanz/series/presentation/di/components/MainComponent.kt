@@ -17,7 +17,6 @@ import com.android.es.roversanz.series.usecases.series.GetSeriesListUseCase
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.provider.ResourceProvider
 import dagger.Component
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton

@@ -23,6 +23,7 @@ class ApplicationModule(private val ctx: Context) {
 
     @Provides
     @Singleton
+    @Suppress("UnsafeCast")
     internal fun provideNotificationManager(ctx: Context): NotificationManager =
             (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as (NotificationManager)).apply {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

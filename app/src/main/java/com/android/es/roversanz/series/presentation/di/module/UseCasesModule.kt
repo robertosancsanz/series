@@ -112,6 +112,7 @@ class UseCasesModule {
 
     @Provides
     @Singleton
+    @Suppress("UnsafeCast")
     internal fun provideDownloadFileUseCase(ctx:Context,downloadManager: DownloadManager):
             DownloadFileUseCase {
         val jobScheduler = ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?

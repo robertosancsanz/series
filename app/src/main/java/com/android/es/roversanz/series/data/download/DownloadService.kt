@@ -20,6 +20,7 @@ import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.presentation.MyApplication
 import com.android.es.roversanz.series.presentation.di.components.MainComponent
 import com.android.es.roversanz.series.presentation.di.scopes.ServiceScope
+import com.android.es.roversanz.series.utils.app
 import com.android.es.roversanz.series.utils.logger.Logger
 import com.android.es.roversanz.series.utils.toIntPercentage
 import dagger.Component
@@ -52,7 +53,7 @@ class DownloadService : JobService() {
     private var params: JobParameters? = null
     private val observer = Observer<DownloadManagerState> {
         it?.let { status ->
-            logger.d(TAG, "Status: $status")
+            logger.d(TAG, "Status: ${status.serieDownloaded.serie.title} is ${status.serieDownloaded.state}")
 
             notificationManager.notify(applicationContext, status, BuildConfig.CHANNEL_ID, BuildConfig.CHANNEL_NAME)
 
@@ -71,7 +72,7 @@ class DownloadService : JobService() {
 
     override fun onCreate() {
         super.onCreate()
-        inject(application as MyApplication)
+        inject(application.app())
 
         startObserve()
     }
@@ -96,8 +97,8 @@ class DownloadService : JobService() {
 
     override fun onStopJob(params: JobParameters?): Boolean {
         logger.d(TAG, "onStopJob")
-        val id = params?.extras?.getInt("id")
-        id?.let { downloadManager.cancel(it) }
+        val serieId = params?.extras?.getInt("id")
+        serieId?.let { downloadManager.cancel(it) }
         return false
     }
 
@@ -153,11 +154,17 @@ class DownloadService : JobService() {
             builder.setGroupAlertBehavior(Notification.GROUP_ALERT_SUMMARY)
         }
         if (status is PROGRESS) {
-            val pauseIntent = Intent(context, DownloadBroadcastReceiver::class.java).apply {
-                action = PAUSED::class.java.canonicalName
-                putExtra(FIELD_ID, serie.id)
-            }
-            val pausePendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, pauseIntent, 0)
+            logger.d(TAG, "Preparing pause for ${serie.id}")
+            val pauseIntent = Intent(context, DownloadBroadcastReceiver::class.java)
+                    .apply {
+                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        action = PAUSED::class.java.simpleName
+                        putExtra(FIELD_ID, serie.id)
+                    }
+
+            logger.d(TAG, "Preparing pause for ${pauseIntent.extras[FIELD_ID]}")
+
+            val pausePendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, pauseIntent, PendingIntent.FLAG_ONE_SHOT)
 
             builder.setContentTitle("${serie.title} is ${status.serieDownloaded.state} ${status.serieDownloaded.progress}")
                     .setProgress(100, status.serieDownloaded.progress.toIntPercentage(), false)
@@ -167,18 +174,20 @@ class DownloadService : JobService() {
             builder.setContentTitle("${serie.title} is ${status.serieDownloaded.state}")
             if (status is PAUSED) {
                 val resumeIntent = Intent(context, DownloadBroadcastReceiver::class.java).apply {
-                    action = RESUMED::class.java.canonicalName
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    action = RESUMED::class.java.simpleName
                     putExtra(FIELD_ID, serie.id)
                 }
-                val resumePendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, resumeIntent, 0)
+                val resumePendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, resumeIntent, PendingIntent.FLAG_ONE_SHOT)
 
                 builder.addAction(R.mipmap.ic_launcher_round, getString(R.string.button_resume), resumePendingIntent)
 
                 val cancelIntent = Intent(context, DownloadBroadcastReceiver::class.java).apply {
-                    action = DELETED::class.java.canonicalName
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    action = DELETED::class.java.simpleName
                     putExtra(FIELD_ID, serie.id)
                 }
-                val cancelPendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, cancelIntent, 0)
+                val cancelPendingIntent: PendingIntent = PendingIntent.getBroadcast(context, 0, cancelIntent, PendingIntent.FLAG_ONE_SHOT)
 
                 builder.addAction(R.mipmap.ic_launcher_round, getString(R.string.button_cancel), cancelPendingIntent)
             }
