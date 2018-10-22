@@ -28,6 +28,11 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".data.download.DownloadService"
+                 android:permission="android.permission.BIND_JOB_SERVICE" >
+
+        </service>
+
     </application>
 
 </manifest>

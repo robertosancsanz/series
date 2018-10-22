@@ -11,7 +11,7 @@ class GetSerieDetailUseCase(private val schedulers: SchedulersProvider,
                       private val repository: SerieRepository,
                       private val resourceProvider: ResourceProvider) : UseCase {
 
-    operator fun invoke(id: Long, onSuccess: (Serie) -> Unit, onError: ((String) -> Unit)?) {
+    operator fun invoke(id: Int, onSuccess: (Serie) -> Unit, onError: ((String) -> Unit)?) {
         repository.getSerie(id)
                 .observeOn(schedulers.backgroundThread())
                 .subscribeOn(schedulers.uiThread())

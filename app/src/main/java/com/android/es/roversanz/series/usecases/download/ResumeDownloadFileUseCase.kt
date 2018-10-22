@@ -2,9 +2,9 @@ package com.android.es.roversanz.series.usecases.download
 
 import android.arch.lifecycle.Observer
 import android.util.Log
-import com.android.es.roversanz.series.data.DownloadManager
-import com.android.es.roversanz.series.data.DownloadManager.DownloadManagerState
-import com.android.es.roversanz.series.data.DownloadManager.DownloadManagerState.RESUMED
+import com.android.es.roversanz.series.data.download.DownloadManager
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.RESUMED
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.UseCase
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded
@@ -25,16 +25,16 @@ class ResumeDownloadFileUseCase(private val downloadManager: DownloadManager) : 
         Log.d(TAG, "Resuming ${serie.title} on $this")
 
         callback?.let {
-//            if (observer == null) {
-                observer = Observer<DownloadManagerState> { state ->
-                    when (state) {
-                        is RESUMED -> {
-                            it.invoke(state.serieDownloaded)
+            //            if (observer == null) {
+            observer = Observer<DownloadManagerState> { state ->
+                when (state) {
+                    is RESUMED -> {
+                        it.invoke(state.serieDownloaded)
 //                            removeObserver()
-                        }
                     }
-                }.apply { downloadManager.state.observeForever(this) }
-            }
+                }
+            }.apply { downloadManager.state.observeForever(this) }
+        }
 //        }
 
         downloadManager.resume(serie.id)

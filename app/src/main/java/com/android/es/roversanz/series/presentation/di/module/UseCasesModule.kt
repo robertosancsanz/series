@@ -1,9 +1,12 @@
 package com.android.es.roversanz.series.presentation.di.module
 
+import android.app.job.JobScheduler
+import android.content.ComponentName
 import android.content.Context
 import android.os.Environment
-import com.android.es.roversanz.series.data.DownloadManager
+import com.android.es.roversanz.series.data.download.DownloadManager
 import com.android.es.roversanz.series.data.SerieRepository
+import com.android.es.roversanz.series.data.download.DownloadService
 import com.android.es.roversanz.series.usecases.download.CancelDownloadFileUseCase
 import com.android.es.roversanz.series.usecases.download.DownloadFileUseCase
 import com.android.es.roversanz.series.usecases.download.PauseDownloadFileUseCase
@@ -109,7 +112,12 @@ class UseCasesModule {
 
     @Provides
     @Singleton
-    internal fun provideDownloadFileUseCase(downloadManager: DownloadManager) = DownloadFileUseCase(downloadManager)
+    internal fun provideDownloadFileUseCase(ctx:Context,downloadManager: DownloadManager):
+            DownloadFileUseCase {
+        val jobScheduler = ctx.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?
+        val serviceComponent = ComponentName(ctx, DownloadService::class.java)
+        return DownloadFileUseCase(downloadManager, jobScheduler, serviceComponent)
+    }
 
     @Provides
     @Singleton

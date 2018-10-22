@@ -2,9 +2,9 @@ package com.android.es.roversanz.series.usecases.download
 
 import android.arch.lifecycle.Observer
 import android.util.Log
-import com.android.es.roversanz.series.data.DownloadManager
-import com.android.es.roversanz.series.data.DownloadManager.DownloadManagerState
-import com.android.es.roversanz.series.data.DownloadManager.DownloadManagerState.DELETED
+import com.android.es.roversanz.series.data.download.DownloadManager
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState
+import com.android.es.roversanz.series.data.download.DownloadManager.DownloadManagerState.DELETED
 import com.android.es.roversanz.series.domain.Serie
 import com.android.es.roversanz.series.usecases.UseCase
 import com.android.es.roversanz.series.usecases.series.SerieDownloaded

@@ -6,7 +6,7 @@ interface DataPersistence {
 
     fun fetchSeries(): List<Serie>
 
-    fun fetchSeriesById(id: Long): Serie?
+    fun fetchSeriesById(id: Int): Serie?
 
     fun addSerie(serie: Serie)
 
