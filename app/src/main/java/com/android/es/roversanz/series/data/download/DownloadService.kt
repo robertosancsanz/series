@@ -8,7 +8,6 @@ import android.app.job.JobService
 import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.support.v4.app.NotificationCompat
 import com.android.es.roversanz.series.BuildConfig
 import com.android.es.roversanz.series.R
@@ -26,7 +25,6 @@ import com.android.es.roversanz.series.utils.toIntPercentage
 import dagger.Component
 import java.security.InvalidParameterException
 import javax.inject.Inject
-import javax.inject.Named
 
 class DownloadService : JobService() {
 
@@ -56,11 +54,15 @@ class DownloadService : JobService() {
         it?.let { status ->
             logger.d(TAG, "Status: $status")
 
-            notificationManager.notify(applicationContext, status, BuildConfig.CHANNEL_ID, NOTIFICATION_GROUP)
+            notificationManager.notify(applicationContext, status, BuildConfig.CHANNEL_ID, BuildConfig.CHANNEL_NAME)
 
             if (status is DownloadManagerState.COMPLETED
                 || status is DownloadManagerState.ERROR
                 || status is DownloadManagerState.DELETED) {
+
+                if (status is DownloadManagerState.DELETED) {
+                    notificationManager.cancel(status.serieDownloaded.serie.id)
+                }
 
                 params?.let { jobFinished(it, false) }
             }
